@@ -4,18 +4,11 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     public static Player Instance{get; private set;}
-    private enum PlayerState
-    {
-        Idle,
-        Move,
-        Jump,
-        Attack,
-        Die
-    }
+    private IPlayerState _currentState;
 
-    PlayerState _playerState = PlayerState.Idle;
+    //PlayerState _playerState = PlayerState.Idle;
     
-    [SerializeField] private float _moveSpeed = 5.0f;
+    [SerializeField] public float _moveSpeed = 5.0f;
     [SerializeField] private float _currentSpeed = 10f;
     [SerializeField] private float _jumpForce = 5.0f;
     [SerializeField] private float _enemyBoundForce = 5.0f;
@@ -31,7 +24,7 @@ public class Player : MonoBehaviour
     public bool _hasStomped = false;
 
     private Collider2D _collider2D;
-    private Rigidbody2D _rd;
+    public Rigidbody2D _rd {get; private set;}
     private LayerMask _groundLayer;
     private LayerMask _enemyLayer;
 
@@ -63,79 +56,52 @@ public class Player : MonoBehaviour
         _isGround = true;
         _hasStomped = false;
         _jumpCount = 0; // 💡最初は0回
+        ChangeState(new PlayerStateIdel(this));
     }
 
     void FixedUpdate()
     {
-        if(_playerState == PlayerState.Jump)
-        {
-            float _targetXVelocity = _rd.linearVelocity.x;
-            if(PlayerController.Instance._moveInput.x != 0f)
-            {
-                _targetXVelocity = PlayerController.Instance._moveInput.x * _moveSpeed;
-            }
-            Vector2 _airVelocity = new Vector2(_targetXVelocity,_rd.linearVelocity.y);
-            _rd.linearVelocity = _airVelocity;
-            //ジャンプ中プレイヤーの向きを変える仕組み
-            PlayerVisual.Instance.ChangeDirection(PlayerController.Instance._moveInput.x);
-        }
+        _currentState?.FixedUpdate();
     }
 
     void Update()
     {
-        switch(_playerState)
-        {
-            case PlayerState.Idle:
-                Debug.Log("アイドル中");
-                _rd.linearVelocity = new Vector2(0, _rd.linearVelocity.y);
-                break;
-            case PlayerState.Move:
-                Debug.Log("移動中");
-                Move();
-                break;
-            case PlayerState.Jump:
-                Debug.Log("ジャンプ");
-                OnLand();
-                break;
-            case PlayerState.Die:
-                break;
-        }
+        _currentState?.Update();
         CheckSideCollisions();
+    }
+
+    public void ChangeState(IPlayerState _playerState)
+    {
+        //今の部屋を出る瞬間の挨拶（Exit）を実行
+        if (_currentState != null) _currentState?.Exit();
+        _currentState = _playerState;
+        //新しい部屋に入る瞬間(Enter)を実行
+        _currentState?.Enter();
     }
 
     public void Move()
     {
-
-        if(_playerState == PlayerState.Die)return;
         if(!_isGround)return;
-        _playerState = PlayerState.Move;
         _rd.linearVelocity = new Vector2(PlayerController.Instance._moveInput.x * _moveSpeed, _rd.linearVelocity.y);
         //ウォーク中の向きを変える仕組み
         PlayerVisual.Instance.ChangeDirection(PlayerController.Instance._moveInput.x);
-
-        if(PlayerController.Instance._moveInput == Vector2.zero)
-        {
-            _playerState = PlayerState.Idle;
-        }
     }
 
     public void Jump()
     {
-        if(_playerState == PlayerState.Die)return;
         if (_jumpCount < 2)
         {
             _isGround = false;
-            _playerState = PlayerState.Jump;
-                
             // ジャンプしたので、カウンターを1増やす（1回目 ➔ 2回目になる）
             _jumpCount++; 
              // 上へ飛び立つ
              // 1回目でも2回目（空中ジャンプ）でも、上への初速をガツンとリセットして与える
             _rd.linearVelocity = new Vector2(_rd.linearVelocity.x, _jumpForce);
+            ChangeState(new PlayerStateJump(this));
         }
     }
 
-    private void OnLand()
+    public void OnLand()
     {
         //足元の判定
         Vector2 _startPos = _collider2D.bounds.center;
@@ -146,27 +112,27 @@ public class Player : MonoBehaviour
 
         //頭の判定
         Vector2 _headEndPos = new Vector2(_startPos.x,_collider2D.bounds.max.y + _groundCheckOffset);
-        RaycastHit2D hittingBlock = Physics2D.Linecast(_startPos, _headEndPos, _groundLayer);
+        RaycastHit2D _hittingBlock = Physics2D.Linecast(_startPos, _headEndPos, _groundLayer);
         Debug.DrawLine(_startPos, _headEndPos, Color.blue);
 
-        if (_rd.linearVelocity.y > 0f && hittingBlock.collider != null)
+        if (_rd.linearVelocity.y > 0f && _hittingBlock.collider != null)
         {
             Debug.Log("ブロックを下から叩いた！");
 
             // 1. 当たった相手から「Tilemapコンポーネント」をガシッと取得する
-            Tilemap tilemap = hittingBlock.collider.GetComponent<Tilemap>();
+            Tilemap _tilemap = _hittingBlock.collider.GetComponent<Tilemap>();
 
-            if (tilemap != null)
+            if (_tilemap != null)
             {
                  // 2. レーザーが当たった世界の本物の座標（point）を取り出す
                 // ※頭上センサーの線の先端（_headEndPos）の座標を使うと、より確実にマスの中心を捉えられます
-                Vector3 hitWorldPos = _headEndPos;
+                Vector3 _hitWorldPos = _headEndPos;
 
                  // 3. 翻訳機を使って、世界の本物の座標を「マス目の住所（Vector3Int）」に一瞬で変換！
-                Vector3Int cellPosition = tilemap.WorldToCell(hitWorldPos);
+                Vector3Int _cellPosition = _tilemap.WorldToCell(_hitWorldPos);
 
                 // 4. そのマス目の住所にあるタイルを「null（空っぽ）」にして消去する！
-                tilemap.SetTile(cellPosition, null);
+                _tilemap.SetTile(_cellPosition, null);
             }
             // 頭をぶつけたので、上への勢いをピタッと止めて落下させる（マリオの挙動）
             _rd.linearVelocity = new Vector2(_rd.linearVelocity.x, 0f);
@@ -179,15 +145,14 @@ public class Player : MonoBehaviour
             
             // 💡【追加③】無事に地面に着地したので、ジャンプ回数を「0」にリセットする！
             _jumpCount = 0; 
-
             if(PlayerController.Instance._moveInput != Vector2.zero)
             {
-                _playerState = PlayerState.Move;
+                ChangeState(new PlayerStateMove(this));
                 _isGround = true;
             }
             else
             {
-                _playerState = PlayerState.Idle;
+                ChangeState(new PlayerStateIdel(this));
                 _isGround = true;
             }
         }
@@ -214,12 +179,12 @@ public class Player : MonoBehaviour
         Vector2 _startPos = _collider2D.bounds.center;
         Vector2 _liftPos = new Vector2(_startPos.x - _groundCheckOffset,_startPos.y);
         Vector2 _rithPos = new Vector2(_startPos.x + _groundCheckOffset,_startPos.y);
-        RaycastHit2D tochingLiftEnemy = Physics2D.Linecast(_startPos,_liftPos,_enemyLayer);
-        RaycastHit2D tochingRithEnemy = Physics2D.Linecast(_startPos,_rithPos,_enemyLayer);
+        RaycastHit2D _tochingLiftEnemy = Physics2D.Linecast(_startPos,_liftPos,_enemyLayer);
+        RaycastHit2D _tochingRithEnemy = Physics2D.Linecast(_startPos,_rithPos,_enemyLayer);
         Debug.DrawLine(_startPos, _liftPos, Color.blue);
         Debug.DrawLine(_startPos,_rithPos,Color.yellow);
-        if(_playerState == PlayerState.Die)return;
-        if(tochingLiftEnemy.collider != null || tochingRithEnemy.collider != null)
+        if(_currentHp == 0)return;
+        if(_tochingLiftEnemy.collider != null || _tochingRithEnemy.collider != null)
         {
             Debug.Log("的に当たった");
             //仮のダメージをパラメータに追加
@@ -227,14 +192,13 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void Damage(int damage)
+    private void Damage(int _damage)
     {
-        _currentHp -= damage;
+        _currentHp -= _damage;
         Debug.Log(_currentHp);
         if(_currentHp == 0)
         {
-            _playerState = PlayerState.Die;
-            Die();
+            ChangeState(new PlayerStateDie(this));
         }
         else
         {
@@ -243,7 +207,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void Die()
+    public void Die()
     {
         _collider2D.isTrigger = true;
         PlayerVisual.Instance.PlayDieAnimation(_rd,_jumpForce);
