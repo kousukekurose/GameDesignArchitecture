@@ -89,6 +89,8 @@ public class Player : MonoBehaviour
 
     public void Jump()
     {
+        ChangeState(new PlayerStateJump(this));
+        Debug.Log(_jumpCount + "ジャンプ");
         if (_jumpCount < 2)
         {
             _isGround = false;
@@ -97,7 +99,6 @@ public class Player : MonoBehaviour
              // 上へ飛び立つ
              // 1回目でも2回目（空中ジャンプ）でも、上への初速をガツンとリセットして与える
             _rd.linearVelocity = new Vector2(_rd.linearVelocity.x, _jumpForce);
-            ChangeState(new PlayerStateJump(this));
         }
     }
 
