@@ -1,0 +1,2 @@
+# GameDesignArchitecture
+ゲーム設計の勉強用プロジェクト
