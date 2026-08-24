@@ -1,6 +1,5 @@
 using UnityEngine.Tilemaps;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
@@ -27,9 +26,9 @@ public class Player : MonoBehaviour
     // 💡【追加①】今、通算で何回ジャンプしたかを数えるカウンター
     private int _jumpCount = 0;
 
-    private Vector2 _moveInput;
+    //private Vector2 _moveInput;
     private bool _isGround = false;
-    private bool _hasStomped = false;
+    public bool _hasStomped = false;
 
     private Collider2D _collider2D;
     private Rigidbody2D _rd;
@@ -71,14 +70,14 @@ public class Player : MonoBehaviour
         if(_playerState == PlayerState.Jump)
         {
             float _targetXVelocity = _rd.linearVelocity.x;
-            if(_moveInput.x != 0f)
+            if(PlayerController.Instance._moveInput.x != 0f)
             {
-                _targetXVelocity = _moveInput.x * _moveSpeed;
+                _targetXVelocity = PlayerController.Instance._moveInput.x * _moveSpeed;
             }
             Vector2 _airVelocity = new Vector2(_targetXVelocity,_rd.linearVelocity.y);
             _rd.linearVelocity = _airVelocity;
             //ジャンプ中プレイヤーの向きを変える仕組み
-            PlayerVisual.Instance.ChangeDirection(_moveInput.x);
+            PlayerVisual.Instance.ChangeDirection(PlayerController.Instance._moveInput.x);
         }
     }
 
@@ -104,56 +103,36 @@ public class Player : MonoBehaviour
         CheckSideCollisions();
     }
 
-    public void OnMove(InputAction.CallbackContext context)
+    public void Move()
     {
-        if(_playerState == PlayerState.Die)return;
-        _moveInput = context.ReadValue<Vector2>();
-        if(context.started && _isGround)
-        {
-            _playerState = PlayerState.Move;
-        }
-    }
 
-    public void OnJump(InputAction.CallbackContext context)
-    {
         if(_playerState == PlayerState.Die)return;
-        if(context.started)
-        {
-            // 💡【追加②：最重要の条件式】
-            // 今までのジャンプ回数（_jumpCount）が「2回未満」のときだけ、中身を実行する！
-            if (_jumpCount < 2)
-            {
-                _isGround = false;
-                _playerState = PlayerState.Jump;
-                
-                // ジャンプしたので、カウンターを1増やす（1回目 ➔ 2回目になる）
-                _jumpCount++; 
-                
-                Jump(); // 上へ飛び立つ
-            }
-        }
-        if(context.canceled)
-        {
-            _hasStomped = false;
-        }
-    }
-
-    private void Move()
-    {
-        _rd.linearVelocity = new Vector2(_moveInput.x * _moveSpeed, _rd.linearVelocity.y);
+        if(!_isGround)return;
+        _playerState = PlayerState.Move;
+        _rd.linearVelocity = new Vector2(PlayerController.Instance._moveInput.x * _moveSpeed, _rd.linearVelocity.y);
         //ウォーク中の向きを変える仕組み
-        PlayerVisual.Instance.ChangeDirection(_moveInput.x);
+        PlayerVisual.Instance.ChangeDirection(PlayerController.Instance._moveInput.x);
 
-        if(_moveInput == Vector2.zero)
+        if(PlayerController.Instance._moveInput == Vector2.zero)
         {
             _playerState = PlayerState.Idle;
         }
     }
 
-    private void Jump()
+    public void Jump()
     {
-        // 1回目でも2回目（空中ジャンプ）でも、上への初速をガツンとリセットして与える
-        _rd.linearVelocity = new Vector2(_rd.linearVelocity.x, _jumpForce);
+        if(_playerState == PlayerState.Die)return;
+        if (_jumpCount < 2)
+        {
+            _isGround = false;
+            _playerState = PlayerState.Jump;
+                
+            // ジャンプしたので、カウンターを1増やす（1回目 ➔ 2回目になる）
+            _jumpCount++; 
+             // 上へ飛び立つ
+             // 1回目でも2回目（空中ジャンプ）でも、上への初速をガツンとリセットして与える
+            _rd.linearVelocity = new Vector2(_rd.linearVelocity.x, _jumpForce);
+        }
     }
 
     private void OnLand()
@@ -201,7 +180,7 @@ public class Player : MonoBehaviour
             // 💡【追加③】無事に地面に着地したので、ジャンプ回数を「0」にリセットする！
             _jumpCount = 0; 
 
-            if(_moveInput != Vector2.zero)
+            if(PlayerController.Instance._moveInput != Vector2.zero)
             {
                 _playerState = PlayerState.Move;
                 _isGround = true;

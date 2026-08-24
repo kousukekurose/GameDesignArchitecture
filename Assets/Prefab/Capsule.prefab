@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4653729269718131189}
   - component: {fileID: 8348342118152248432}
   - component: {fileID: 2696062054558447606}
+  - component: {fileID: 6641315927808347712}
   - component: {fileID: 3783948904606518469}
   - component: {fileID: 6307397886542704744}
   - component: {fileID: 4882416208087887397}
@@ -114,7 +115,20 @@ MonoBehaviour:
   _jumpForce: 5
   _enemyBoundForce: 5
   _groundCheckOffset: 0.1
+  _hasStomped: 0
   _playerHp: 3
+--- !u!114 &6641315927808347712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8532329189836315683}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62e2d1130a10c4a8db9869d9a03690a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
 --- !u!114 &3783948904606518469
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219,8 +233,8 @@ MonoBehaviour:
   m_ActionEvents:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2696062054558447606}
-        m_TargetAssemblyTypeName: Player, Assembly-CSharp
+      - m_Target: {fileID: 6641315927808347712}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
         m_MethodName: OnMove
         m_Mode: 0
         m_Arguments:
@@ -251,8 +265,8 @@ MonoBehaviour:
     m_ActionName: 'Player/Crouch[/Keyboard/c]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2696062054558447606}
-        m_TargetAssemblyTypeName: Player, Assembly-CSharp
+      - m_Target: {fileID: 6641315927808347712}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
         m_MethodName: OnJump
         m_Mode: 0
         m_Arguments:
