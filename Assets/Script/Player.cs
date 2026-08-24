@@ -1,7 +1,6 @@
 using UnityEngine.Tilemaps;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Collections;
 
 public class Player : MonoBehaviour
 {
@@ -29,7 +28,6 @@ public class Player : MonoBehaviour
     private int _jumpCount = 0;
 
     private Vector2 _moveInput;
-    //private bool _isJump = false;
     private bool _isGround = false;
     private bool _hasStomped = false;
 
@@ -37,11 +35,6 @@ public class Player : MonoBehaviour
     private Rigidbody2D _rd;
     private LayerMask _groundLayer;
     private LayerMask _enemyLayer;
-
-    private float _playerRotation = 1;
-    private bool _isInvincible = false;
-
-    private SpriteRenderer _spriteRenderer;
 
     [SerializeField] private int _playerHp = 3;
     public int _currentHp{get; private set;}
@@ -62,7 +55,6 @@ public class Player : MonoBehaviour
 
     void Start()
     {
-        _spriteRenderer = GetComponent<SpriteRenderer>();
         _currentHp = _playerHp;
         Debug.Log(_currentHp);
         _rd = GetComponent<Rigidbody2D>();
@@ -72,7 +64,6 @@ public class Player : MonoBehaviour
         _isGround = true;
         _hasStomped = false;
         _jumpCount = 0; // 💡最初は0回
-        _isInvincible = false;
     }
 
     void FixedUpdate()
@@ -87,14 +78,7 @@ public class Player : MonoBehaviour
             Vector2 _airVelocity = new Vector2(_targetXVelocity,_rd.linearVelocity.y);
             _rd.linearVelocity = _airVelocity;
             //ジャンプ中プレイヤーの向きを変える仕組み
-            if(_moveInput.x > 0)
-            {
-                transform.localScale = new Vector3(_playerRotation,_playerRotation,_playerRotation);
-            }
-            else if(_moveInput.x < 0)
-            {
-                transform.localScale = new Vector3(-_playerRotation,_playerRotation,_playerRotation);
-            }
+            PlayerVisual.Instance.ChangeDirection(_moveInput.x);
         }
     }
 
@@ -158,14 +142,7 @@ public class Player : MonoBehaviour
     {
         _rd.linearVelocity = new Vector2(_moveInput.x * _moveSpeed, _rd.linearVelocity.y);
         //ウォーク中の向きを変える仕組み
-        if(_moveInput.x > 0)
-        {
-            transform.localScale = new Vector3(_playerRotation,_playerRotation,_playerRotation);
-        }
-        else if(_moveInput.x < 0)
-        {
-            transform.localScale = new Vector3(-_playerRotation,_playerRotation,_playerRotation);
-        }
+        PlayerVisual.Instance.ChangeDirection(_moveInput.x);
 
         if(_moveInput == Vector2.zero)
         {
@@ -212,7 +189,6 @@ public class Player : MonoBehaviour
                 // 4. そのマス目の住所にあるタイルを「null（空っぽ）」にして消去する！
                 tilemap.SetTile(cellPosition, null);
             }
-
             // 頭をぶつけたので、上への勢いをピタッと止めて落下させる（マリオの挙動）
             _rd.linearVelocity = new Vector2(_rd.linearVelocity.x, 0f);
         }
@@ -255,7 +231,7 @@ public class Player : MonoBehaviour
     //左右の当たり判定
     public void CheckSideCollisions()
     {
-        if(_isInvincible)return;
+        if(PlayerVisual.Instance._isInvincible)return;
         Vector2 _startPos = _collider2D.bounds.center;
         Vector2 _liftPos = new Vector2(_startPos.x - _groundCheckOffset,_startPos.y);
         Vector2 _rithPos = new Vector2(_startPos.x + _groundCheckOffset,_startPos.y);
@@ -283,44 +259,14 @@ public class Player : MonoBehaviour
         }
         else
         {
-            //無敵時間追加
-            StartCoroutine(IsInvincible());
+            Debug.Log("無敵開始");
+            PlayerVisual.Instance.StartInvincibleFlash();
         }
-    }
-
-    private IEnumerator IsInvincible()
-    {
-        _isInvincible = true;
-        for(int i = 0; i < 15; i++)
-        {
-            _spriteRenderer.color = new Color(1f,1f,1f,0.3f);
-            yield return new WaitForSeconds(0.1f);
-
-            _spriteRenderer.color = new Color(1f,1f,1f,1f);
-            yield return new WaitForSeconds(0.1f);
-        }
-        _spriteRenderer.color = new Color(1f,1f,1f,1f);
-        _isInvincible = false;
     }
 
     private void Die()
     {
-        _rd.linearVelocity = new Vector2(0, _jumpForce);
         _collider2D.isTrigger = true;
-        if(transform.localScale.x < 0)
-        {
-            transform.rotation = Quaternion.Euler(0,0,-10);
-        }
-        else
-        {
-            transform.rotation = Quaternion.Euler(0,0,10);
-        }
-        StartCoroutine(DieAnime());
-    }
-
-    private IEnumerator DieAnime()
-    {
-        yield return new WaitForSeconds(2f);
-        _rd.linearVelocity = new Vector2(_rd.linearVelocity.x, 0f);
+        PlayerVisual.Instance.PlayDieAnimation(_rd,_jumpForce);
     }
 }

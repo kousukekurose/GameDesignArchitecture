@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4653729269718131189}
   - component: {fileID: 8348342118152248432}
   - component: {fileID: 2696062054558447606}
+  - component: {fileID: 3783948904606518469}
   - component: {fileID: 6307397886542704744}
   - component: {fileID: 4882416208087887397}
   - component: {fileID: 4912128732960568787}
@@ -114,6 +115,19 @@ MonoBehaviour:
   _enemyBoundForce: 5
   _groundCheckOffset: 0.1
   _playerHp: 3
+--- !u!114 &3783948904606518469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8532329189836315683}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1479f93c4619648498a6144208a446a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerVisual
+  _playerRotation: 1
 --- !u!50 &6307397886542704744
 Rigidbody2D:
   serializedVersion: 5
