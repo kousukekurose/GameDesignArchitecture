@@ -89,5 +89,6 @@ public class PlayerVisual : MonoBehaviour
     {
         yield return new WaitForSeconds(_dieAnimationDelay);
         _rd.linearVelocity = new Vector2(_rd.linearVelocity.x, 0f);
+        Destroy(_rd);
     }
 }

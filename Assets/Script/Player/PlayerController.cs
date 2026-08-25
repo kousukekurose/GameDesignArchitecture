@@ -26,6 +26,18 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void OnSprint(InputAction.CallbackContext context)
+    {
+        if(context.started)
+        {
+            _player._isSprint = true;
+        }
+        if(context.canceled)
+        {
+            _player._isSprint = false;
+        }
+    }
+
     public void OnJump(InputAction.CallbackContext context)
     {
         if(context.started)

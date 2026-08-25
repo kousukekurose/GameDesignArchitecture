@@ -75,8 +75,12 @@ public class PlayerStateMove : PlayerStateGroundBase
     public override void Update()
     {
         base.Update();
+        if ((_player.IsTouchingWallLeft && _player._currentSpeed < 0f) || (_player.IsTouchingWallRight && _player._currentSpeed > 0f))
+        {
+            _player._currentSpeed = 0f;
+        }
         // 移動速度の上書きと向きの変更
-        _player._rd.linearVelocity = new Vector2(PlayerController.Instance._moveInput.x * _player._moveSpeed, _player._rd.linearVelocity.y);
+        _player._rd.linearVelocity = new Vector2(PlayerController.Instance._moveInput.x * _player._currentSpeed, _player._rd.linearVelocity.y);
         PlayerVisual.Instance.ChangeDirection(PlayerController.Instance._moveInput.x);
     }
 }
@@ -163,11 +167,16 @@ public abstract class PlayerStateAirBase : IPlayerState
 
     public virtual void FixedUpdate()
     {
+        if ((_player.IsTouchingWallLeft && _player._currentSpeed < 0f) || (_player.IsTouchingWallRight && _player._currentSpeed > 0f))
+        {
+            Debug.Log("空中壁激突");
+            _player._currentSpeed = 0f;
+        }
         // 空中での横移動の慣性制御
         float _targetXVelocity = _player._rd.linearVelocity.x;
         if (PlayerController.Instance._moveInput.x != 0f)
         {
-            _targetXVelocity = PlayerController.Instance._moveInput.x * _player._moveSpeed;
+            _targetXVelocity = PlayerController.Instance._moveInput.x * _player._currentSpeed;
         }
         
         Vector2 _airVelocity = new Vector2(_targetXVelocity, _player._rd.linearVelocity.y);
