@@ -20,6 +20,7 @@ public class PlayerController : MonoBehaviour
         _moveInput = context.ReadValue<Vector2>();
         if(context.started)
         {
+            if(_player.CurrentState is not PlayerStateDie)
             if (_player._isGround)
             _player.ChangeState(new PlayerStateMove(_player));
         }
@@ -29,6 +30,7 @@ public class PlayerController : MonoBehaviour
     {
         if(context.started)
         {
+            if(_player.CurrentState is not PlayerStateDie)
             _player.ChangeState(new PlayerStateJump(_player));
         }
         if(context.canceled)
