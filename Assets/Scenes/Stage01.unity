@@ -926,7 +926,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   playerPosZ: 1
-  playerPosY: 8
+  playerPosY: 10
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -1393,8 +1393,8 @@ MonoBehaviour:
   _dirtTile: {fileID: 11400000, guid: a0b280c02cbfffe4084f4722ed26afcc, type: 2}
   _platformTile: {fileID: 0}
   _playerPrefab: {fileID: 3583546198939162654, guid: e27b0e0e8a6914bf39e945479ae263a2, type: 3}
-  _enemyPrefab: {fileID: 5247076996056084197, guid: 1e332977be6d249d8b84aae519e606a1, type: 3}
-  _goalPrefab: {fileID: 0}
+  _enemyPrefab: {fileID: 6548819112789204400, guid: 1e332977be6d249d8b84aae519e606a1, type: 3}
+  _goalPrefab: {fileID: 6548819112789204400, guid: 1e332977be6d249d8b84aae519e606a1, type: 3}
   _stageFileName: Stage01
 --- !u!1 &1850873819
 GameObject:

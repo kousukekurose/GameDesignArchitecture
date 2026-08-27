@@ -2,8 +2,8 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using R3;
 using System.Threading;
+using System.IO.Compression;
 
-// IDamageable を実装することで、敵やギミックから直接ダメージを呼び出せるようにします
 public class Player : MonoBehaviour, IDamageable
 {
     public static Player Instance { get; private set; }
@@ -84,6 +84,7 @@ public class Player : MonoBehaviour, IDamageable
         _currentSpeed = _isSprint ? _sprintSpeed : _moveSpeed;
     }
 
+    //ステートの切り替え
     public void ChangeState(IPlayerState _playerState)
     {
         _stateCts?.Cancel();
@@ -137,7 +138,6 @@ public class Player : MonoBehaviour, IDamageable
         }
     }
 
-    // ★ IDamageable インターフェースの具現化
     public void TakeDamage(int _damage)
     {
         // 死亡時や無敵時はダメージを重ねて受けない防衛コード
@@ -160,7 +160,7 @@ public class Player : MonoBehaviour, IDamageable
         }
     }
 
-    private void Oestroy()
+    private void OnDestroy()
     {
         _stateCts?.Cancel();
         _stateCts?.Dispose();

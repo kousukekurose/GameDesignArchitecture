@@ -51,7 +51,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void Oestroy()
+    private void OnDestroy()
     {
         _moveInputProp.Dispose();
     }

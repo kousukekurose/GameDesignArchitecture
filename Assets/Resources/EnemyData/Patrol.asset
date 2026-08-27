@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6bedfaab655c4fc5a8d6bc27761acc2, type: 3}
   m_Name: Patrol
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
-  enemyName: Goon
-  maxHp: 0
-  attackPower: 0
-  moveSpeed: 0
-  detectionRange: 5
-  detectionAngle: 90
-  attackRange: 1.2
-  wallCheckDistance: 0.3
-  cliffCheckDistance: 0.5
+  _enemyName: Goon
+  _maxHp: 1
+  _attackPower: 1
+  _moveSpeed: 3
+  _detectionRange: 5
+  _detectionAngle: 90
+  _attackRange: 1.2
+  _wallCheckDistance: 0.3
+  _cliffCheckDistance: 0.5

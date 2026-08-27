@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class PlayerSpawn : MonoBehaviour
+public class ObjectGenerator : MonoBehaviour
 {
-    [SerializeField] GameObject player;
+    [SerializeField] GameObject _Object;
     private Vector3 spawn;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -11,15 +11,9 @@ public class PlayerSpawn : MonoBehaviour
         PSpawn();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public void PSpawn()
     {
         spawn = transform.position;
-        Instantiate (player, spawn, Quaternion.identity);
+        Instantiate (_Object, spawn, Quaternion.identity);
     }
 }

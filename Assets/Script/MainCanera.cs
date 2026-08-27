@@ -6,12 +6,6 @@ public class MainCanera : MonoBehaviour
     [SerializeField] private float playerPosZ = 1;
     [SerializeField] private float playerPosY = 0;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
     // Update is called once per frame
     void Update()
     {
