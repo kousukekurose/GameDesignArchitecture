@@ -1,7 +1,7 @@
 using UnityEngine;
 using R3;
 
-public class Enemy : MonoBehaviour
+public class Enemy : MonoBehaviour,IAttacker
 {
     [Header("Settings")]
     [SerializeField] private string enemyId = "Slime"; // Resources/EnemyData/ 内のファイル名
@@ -10,6 +10,8 @@ public class Enemy : MonoBehaviour
     public ReadOnlyReactiveProperty<int> Hp => _hp;
     public EnemyData Data => _enemyData;
     public float Speed => _enemyData != null ? _enemyData.MoveSpeed : 0f;
+
+    public int _DamageAmount  => _enemyData != null ? _enemyData.AttackPower:0;
 
     private EnemyData _enemyData;
     private ReactiveProperty<int> _hp;

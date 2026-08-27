@@ -44,4 +44,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe62047d4a1943e4af959728864cf84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSpawn
-  player: {fileID: 8532329189836315683, guid: ae9cdfb0d83f64513a3c45928677a16b, type: 3}
+  _Object: {fileID: 8532329189836315683, guid: ae9cdfb0d83f64513a3c45928677a16b, type: 3}

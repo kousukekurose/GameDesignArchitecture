@@ -3,6 +3,8 @@ using Cysharp.Threading.Tasks;
 using R3;
 using System.Threading;
 using System.IO.Compression;
+using NUnit.Framework;
+using System.Threading.Tasks;
 
 public class Player : MonoBehaviour, IDamageable
 {
@@ -25,8 +27,6 @@ public class Player : MonoBehaviour, IDamageable
 
     [Header("プレイヤーのステータス")]
     [SerializeField] private int _playerHp = 3;
-    // 横から敵にぶつかったときのダメージ量
-    [SerializeField] private int _sideDamageAmount = 1; 
     public int _currentHp { get; private set; }
     public int enemyCount { get; set; }
     public int _jumpCount { get; set; } = 0;
@@ -132,9 +132,11 @@ public class Player : MonoBehaviour, IDamageable
         Debug.DrawLine(_startPos, _enemyLeftPos, Color.blue);
         Debug.DrawLine(_startPos, _enemyRightPos, Color.yellow);
 
-        if (_touchingLeftEnemy.collider != null || _touchingRightEnemy.collider != null)
+        Collider2D _hitCollider = _touchingRightEnemy.collider ?? _touchingLeftEnemy.collider;
+
+        if (_hitCollider != null &&  _hitCollider.TryGetComponent<IAttacker>(out var attacker))
         {
-            TakeDamage(_sideDamageAmount);
+            TakeDamage(attacker._DamageAmount);
         }
     }
 
