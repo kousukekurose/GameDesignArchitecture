@@ -6,7 +6,7 @@ using System.IO.Compression;
 using NUnit.Framework;
 using System.Threading.Tasks;
 
-public class Player : MonoBehaviour, IDamageable
+public class Player : MonoBehaviour, IDamageable,IAttacker
 {
     public static Player Instance { get; private set; }
     
@@ -16,11 +16,16 @@ public class Player : MonoBehaviour, IDamageable
     [Header("移動・ジャンプ設定")]
     [SerializeField] private float _moveSpeed = 5.0f;
     [SerializeField] private float _sprintSpeed = 10f;
+    [SerializeField] private float _jumpForce = 5.0f;
     public float _currentSpeed;
     public bool _isSprint { get; set; }
-    public float _jumpForce { get; private set; } = 10.0f;
+    public float JumpForce { get=> _jumpForce; private set => _jumpForce = value; }
     public float _enemyBoundForce { get; private set; } = 5.0f;
     public float _groundCheckOffset { get; private set; } = 0.1f;
+
+    public int _attackPower {get; private set;} = 1;
+
+    public int _DamageAmount => _attackPower;
 
     public bool IsTouchingWallLeft { get; private set; }
     public bool IsTouchingWallRight { get; private set; }
@@ -67,7 +72,7 @@ public class Player : MonoBehaviour, IDamageable
         _collider2D = GetComponent<Collider2D>();
         _groundLayer = LayerMask.GetMask("Ground");
         _enemyLayer = LayerMask.GetMask("Enemy");
-        
+        _disposables = new CompositeDisposable();
         _isGround = true;
         _hasStomped = false;
         _jumpCount = 0; 

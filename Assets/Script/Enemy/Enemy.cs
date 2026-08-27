@@ -15,6 +15,10 @@ public class Enemy : MonoBehaviour,IAttacker
 
     private EnemyData _enemyData;
     private ReactiveProperty<int> _hp;
+    public Collider2D _collider2D{get; private set;}
+    public float _playerCheck{get; private set;} = 0.2f;
+    public Rigidbody2D _rd{get;private set;}
+    public LayerMask _playerLayer {get; private set;}
 
     private void Awake()
     {
@@ -27,6 +31,13 @@ public class Enemy : MonoBehaviour,IAttacker
         }
 
         _hp = new ReactiveProperty<int>(_enemyData.MaxHp);
+    }
+
+    private void Start()
+    {
+        _collider2D = GetComponent<Collider2D>(); 
+        _rd = GetComponent<Rigidbody2D>();
+        _playerLayer = LayerMask.GetMask("Player");
     }
 
     public void TakeDamage(int damage)

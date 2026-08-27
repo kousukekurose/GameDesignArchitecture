@@ -217,7 +217,7 @@ public class PlayerStateJump : PlayerStateAirBase
         {
             _player._isGround = false;
             _player._jumpCount++;
-            _player._rd.linearVelocity = new Vector2(_player._rd.linearVelocity.x, _player._jumpForce);
+            _player._rd.linearVelocity = new Vector2(_player._rd.linearVelocity.x, _player.JumpForce);
         }
         await base.EnterAsync(player,ct);
     }
@@ -249,7 +249,7 @@ public class PlayerStateDie : IPlayerState
         player._collider2D.isTrigger = true;
         if (PlayerVisual.Instance != null)
         {
-            PlayerVisual.Instance.PlayDieAnimation(_player._rd, _player._jumpForce);
+            PlayerVisual.Instance.PlayDieAnimation(_player._rd, _player.JumpForce);
         }
 
         await UniTask.Delay(System.TimeSpan.FromSeconds(2),cancellationToken: ct);

@@ -7,7 +7,7 @@ public class PatrolState : IEnemyState
 {
     public UniTask EnterAsync(IEnemyController controller, CancellationToken ct)
     {
-        Debug.Log("パトロールアニメーション再生場所");
+        //パトロールアニメーション再生場所
         //controller.Visual.PlayAnimation("Walk");
         return UniTask.CompletedTask;
     }

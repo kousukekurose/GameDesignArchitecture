@@ -194,7 +194,7 @@ GameObject:
   - component: {fileID: 7266228037475072401}
   - component: {fileID: 517278880993163553}
   - component: {fileID: 2329061956583591246}
-  - component: {fileID: 8747196605236078695}
+  - component: {fileID: 7534989513937814658}
   m_Layer: 7
   m_Name: TestEnemy
   m_TagString: Untagged
@@ -247,7 +247,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyController
   visual: {fileID: 1811742011416178653}
-  rb2d: {fileID: 2329061956583591246}
   eyesLocation: {fileID: 1579595414028258048}
   groundCheckPoint: {fileID: 5501999023695806694}
 --- !u!50 &2329061956583591246
@@ -277,8 +276,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!70 &8747196605236078695
-CapsuleCollider2D:
+--- !u!61 &7534989513937814658
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -312,8 +311,17 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Size: {x: 0.5, y: 1}
-  m_Direction: 0
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0
 --- !u!1 &7880695155196543884
 GameObject:
   m_ObjectHideFlags: 0

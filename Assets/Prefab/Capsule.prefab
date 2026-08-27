@@ -112,8 +112,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Player
   _moveSpeed: 5
   _sprintSpeed: 10
+  _jumpForce: 8
+  _currentSpeed: 0
   _playerHp: 3
-  _sideDamageAmount: 1
 --- !u!114 &6641315927808347712
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -206,8 +207,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.05, y: -0.2}
-  m_Size: {x: 1, y: 1.4}
+  m_Offset: {x: 0, y: -0.3}
+  m_Size: {x: 1, y: 1}
   m_Direction: 0
 --- !u!114 &4912128732960568787
 MonoBehaviour:
