@@ -1,15 +1,9 @@
+using System.Threading;
+using Cysharp.Threading.Tasks;
 
 public interface IEnemyState
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    UniTask EnterAsync(IEnemyController controller, CancellationToken ct);
+    UniTask UpdateAsync(IEnemyController controller, CancellationToken ct);
+    UniTask ExitAsync(CancellationToken ct);
 }

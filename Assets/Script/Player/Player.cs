@@ -1,6 +1,10 @@
 using UnityEngine;
+using Cysharp.Threading.Tasks;
+using R3;
+using System.Threading;
 
-public class Player : MonoBehaviour
+// IDamageable を実装することで、敵やギミックから直接ダメージを呼び出せるようにします
+public class Player : MonoBehaviour, IDamageable
 {
     public static Player Instance { get; private set; }
     
@@ -8,10 +12,10 @@ public class Player : MonoBehaviour
     public IPlayerState CurrentState => _currentState;
 
     [Header("移動・ジャンプ設定")]
-    [SerializeField] public float _moveSpeed = 5.0f;
-    [SerializeField] public float _sprintSpeed = 10f;
+    [SerializeField] private float _moveSpeed = 5.0f;
+    [SerializeField] private float _sprintSpeed = 10f;
     public float _currentSpeed;
-    public bool _isSprint{get; set;}
+    public bool _isSprint { get; set; }
     public float _jumpForce { get; private set; } = 10.0f;
     public float _enemyBoundForce { get; private set; } = 5.0f;
     public float _groundCheckOffset { get; private set; } = 0.1f;
@@ -36,6 +40,10 @@ public class Player : MonoBehaviour
     public Rigidbody2D _rd { get; private set; }
     public LayerMask _groundLayer { get; private set; }
     public LayerMask _enemyLayer { get; private set; }
+
+    private CancellationTokenSource _stateCts;
+    private CompositeDisposable _disposables;
+
 
     private void Awake()
     {
@@ -64,60 +72,78 @@ public class Player : MonoBehaviour
         _hasStomped = false;
         _jumpCount = 0; 
 
-        // 初期ステート（アイドル）を設定してゲーム開始
-        ChangeState(new PlayerStateIdel(this));
-    }
+        Observable.EveryUpdate(this.destroyCancellationToken)
+        .Subscribe(_ => CheckSideCollisions())
+        .AddTo(_disposables);
 
-    private void FixedUpdate()
-    {
-        _currentState?.FixedUpdate();
+        ChangeState(new PlayerStateIdle(this));
     }
 
     private void Update()
     {
         _currentSpeed = _isSprint ? _sprintSpeed : _moveSpeed;
-        Debug.Log(_currentSpeed);
-        _currentState?.Update();
-        CheckSideCollisions();
     }
 
     public void ChangeState(IPlayerState _playerState)
     {
-        if (_currentState != null) _currentState?.Exit();
+        _stateCts?.Cancel();
+        _stateCts?.Dispose();
+        _currentState?.Exit();
+
+        _stateCts = new CancellationTokenSource();
         _currentState = _playerState;
-        _currentState?.Enter();
+
+        _RunStateAsync(_playerState,_stateCts.Token).Forget();
+    }
+
+    private async UniTaskVoid _RunStateAsync(IPlayerState newState, CancellationToken ct)
+    {
+        try
+        {
+            if(newState != null)
+            {
+                await newState.EnterAsync(this,ct);
+            }
+        }
+        catch(System.OperationCanceledException){}
     }
 
     // 左右の当たり判定
     public void CheckSideCollisions()
     {
-        // すでに死んでいる、または無敵状態ならダメージ判定を完全にスルーする
         if (_currentHp <= 0 || _currentState is PlayerStateDie) return;
-        if (PlayerVisual.Instance._isInvincible) return;
+        if (PlayerVisual.Instance != null && PlayerVisual.Instance._isInvincible) return;
 
-        //敵検知
         Vector2 _startPos = _collider2D.bounds.center;
-        Vector2 _enemyLiftPos = new Vector2(_startPos.x - _groundCheckOffset, _startPos.y);
-        Vector2 _enemyRightPos = new Vector2(_startPos.x + _groundCheckOffset, _startPos.y);
-        RaycastHit2D _tochingLiftEnemy = Physics2D.Linecast(_startPos, _enemyLiftPos, _enemyLayer);
-        RaycastHit2D _tochingRithEnemy = Physics2D.Linecast(_startPos, _enemyRightPos, _enemyLayer);
-        Vector2 _groundLiftPos = new Vector2(_collider2D.bounds.min.x - _groundCheckOffset, _startPos.y);
-        Vector2 _groundRithPos = new Vector2(_collider2D.bounds.max.x + _groundCheckOffset, _startPos.y);
-        IsTouchingWallLeft = Physics2D.Linecast(new Vector2(_collider2D.bounds.min.x, _startPos.y), _groundLiftPos, _groundLayer);
-        IsTouchingWallRight = Physics2D.Linecast(new Vector2(_collider2D.bounds.max.x, _startPos.y), _groundRithPos, _groundLayer);
         
+        Vector2 _enemyLeftPos = new Vector2(_collider2D.bounds.min.x - _groundCheckOffset, _startPos.y);
+        Vector2 _enemyRightPos = new Vector2(_collider2D.bounds.max.x + _groundCheckOffset, _startPos.y);
         
-        Debug.DrawLine(_startPos, _enemyLiftPos, Color.blue);
+        RaycastHit2D _touchingLeftEnemy = Physics2D.Linecast(_startPos, _enemyLeftPos, _enemyLayer);
+        RaycastHit2D _touchingRightEnemy = Physics2D.Linecast(_startPos, _enemyRightPos, _enemyLayer);
+        
+        Vector2 _groundLeftPos = new Vector2(_collider2D.bounds.min.x - _groundCheckOffset, _startPos.y);
+        Vector2 _groundRightPos = new Vector2(_collider2D.bounds.max.x + _groundCheckOffset, _startPos.y);
+        
+        IsTouchingWallLeft = Physics2D.Linecast(new Vector2(_collider2D.bounds.min.x, _startPos.y), _groundLeftPos, _groundLayer);
+        IsTouchingWallRight = Physics2D.Linecast(new Vector2(_collider2D.bounds.max.x, _startPos.y), _groundRightPos, _groundLayer);
+        
+        Debug.DrawLine(_startPos, _enemyLeftPos, Color.blue);
         Debug.DrawLine(_startPos, _enemyRightPos, Color.yellow);
 
-        if (_tochingLiftEnemy.collider != null || _tochingRithEnemy.collider != null)
+        if (_touchingLeftEnemy.collider != null || _touchingRightEnemy.collider != null)
         {
-            Damage(_sideDamageAmount);
+            TakeDamage(_sideDamageAmount);
         }
     }
 
-    private void Damage(int _damage)
+    // ★ IDamageable インターフェースの具現化
+    public void TakeDamage(int _damage)
     {
+        // 死亡時や無敵時はダメージを重ねて受けない防衛コード
+        if (_currentHp <= 0 || (_currentState is PlayerStateDie)) return;
+        if (PlayerVisual.Instance != null && PlayerVisual.Instance._isInvincible) return;
+
         _currentHp -= _damage;
 
         if (_currentHp <= 0)
@@ -127,7 +153,17 @@ public class Player : MonoBehaviour
         }
         else
         {
-            PlayerVisual.Instance.StartInvincibleFlash();
+            if (PlayerVisual.Instance != null)
+            {
+                PlayerVisual.Instance.StartInvincibleFlash();
+            }
         }
+    }
+
+    private void Oestroy()
+    {
+        _stateCts?.Cancel();
+        _stateCts?.Dispose();
+        _disposables?.Dispose();
     }
 }

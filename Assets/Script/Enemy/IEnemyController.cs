@@ -1,16 +1,13 @@
 using UnityEngine;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 
-public class IEnemyController : MonoBehaviour
+public interface IEnemyController
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    Enemy Enemy { get; }
+    EnemyVisual Visual { get; }
+    
+    void ChangeState(IEnemyState newState);
+    bool IsObstacleOrCliffAhead();
+    UniTask MovePatrolAsync(CancellationToken ct);
 }
