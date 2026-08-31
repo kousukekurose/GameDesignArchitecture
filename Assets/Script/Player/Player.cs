@@ -2,9 +2,7 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using R3;
 using System.Threading;
-using System.IO.Compression;
-using NUnit.Framework;
-using System.Threading.Tasks;
+using UnityEngine.UIElements;
 
 public class Player : MonoBehaviour, IDamageable,IAttacker
 {
@@ -12,6 +10,9 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
     
     private IPlayerState _currentState;
     public IPlayerState CurrentState => _currentState;
+
+    private readonly Subject<Unit> _onDeathSubject = new();
+    public Observable<Unit> OnDeath => _onDeathSubject;
 
     [Header("移動・ジャンプ設定")]
     [SerializeField] private float _moveSpeed = 5.0f;
@@ -45,6 +46,7 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
     public Rigidbody2D _rd { get; private set; }
     public LayerMask _groundLayer { get; private set; }
     public LayerMask _enemyLayer { get; private set; }
+    public LayerMask _nullEnemyLayer { get; private set; }
 
     private CancellationTokenSource _stateCts;
     private CompositeDisposable _disposables;
@@ -72,6 +74,7 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
         _collider2D = GetComponent<Collider2D>();
         _groundLayer = LayerMask.GetMask("Ground");
         _enemyLayer = LayerMask.GetMask("Enemy");
+        _nullEnemyLayer = LayerMask.GetMask("null");
         _disposables = new CompositeDisposable();
         _isGround = true;
         _hasStomped = false;
@@ -157,6 +160,7 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
         {
             _currentHp = 0; 
             ChangeState(new PlayerStateDie(this));
+            _onDeathSubject.OnNext(Unit.Default);
         }
         else
         {

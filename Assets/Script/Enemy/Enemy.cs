@@ -1,7 +1,7 @@
 using UnityEngine;
 using R3;
 
-public class Enemy : MonoBehaviour,IAttacker
+public class Enemy : MonoBehaviour,IAttacker,IDamageable
 {
     [Header("Settings")]
     [SerializeField] private string enemyId = "Slime"; // Resources/EnemyData/ 内のファイル名
