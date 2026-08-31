@@ -23,7 +23,7 @@ public class PlayerVisual : MonoBehaviour
     // 死亡時にキャラクターが傾く角度
     [SerializeField] private float _dieRotateAngle = 10f;
     // 死亡演出が始まってから動きを止めるまでの秒数     
-    [SerializeField] private float _dieAnimationDelay = 2f;   
+    [SerializeField] private float _dieAnimationDelay = 4f;   
 
     public bool _isInvincible { get; private set; }
 

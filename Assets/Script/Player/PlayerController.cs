@@ -33,9 +33,16 @@ public class PlayerController : MonoBehaviour
 
     public void OnSprint(InputAction.CallbackContext context)
     {
+        Debug.Log("走るボタン");
         if(_player == null)return;
-        if(context.started)_player._isSprint = true;
-        if(context.canceled)_player._isSprint = false;
+        if (context.started)
+        {
+            _player._isSprint = true;
+        }
+        if(context.canceled)
+        {
+            _player._isSprint = false;
+        }
     }
 
     public void OnJump(InputAction.CallbackContext context)

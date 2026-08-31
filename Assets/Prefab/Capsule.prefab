@@ -145,7 +145,7 @@ MonoBehaviour:
   _visibleDuration: 0.1
   _flashAlpha: 0.3
   _dieRotateAngle: 10
-  _dieAnimationDelay: 2
+  _dieAnimationDelay: 4
 --- !u!50 &6307397886542704744
 Rigidbody2D:
   serializedVersion: 5

@@ -35,7 +35,12 @@ public class DeadState : IEnemyState
         //controller.Visual.PlayAnimation("Die");
         Debug.Log($"{controller.Enemy.gameObject.name} が死亡しました。");
         
-        await UniTask.Delay(System.TimeSpan.FromSeconds(2), cancellationToken: ct);
+        await UniTask.Delay(System.TimeSpan.FromSeconds(1), cancellationToken: ct);
+        if(controller.Enemy.gameObject != null)
+        {
+            Debug.Log("nullに変更");
+            controller.Enemy.gameObject.layer = LayerMask.NameToLayer("null");
+        }
         Object.Destroy(controller.Enemy.gameObject);
     }
 

@@ -5,7 +5,10 @@ using R3;
 
 public class EnemyController : MonoBehaviour, IEnemyController
 {
+    public static EnemyController Instance{get; private set;}
     private Enemy _enemy;
+    private static readonly Subject<Unit> _onEnemyDeadSubject = new();
+    public static Observable <Unit> OnEnemyDead => _onEnemyDeadSubject;
 
     [SerializeField] private EnemyVisual visual;
     //[SerializeField] private Rigidbody2D rb2d;
@@ -31,9 +34,12 @@ public class EnemyController : MonoBehaviour, IEnemyController
         }
 
         _enemy.Hp
-            .Where(hp => hp <= 0)
-            .Subscribe(_ => ChangeState(new DeadState())) 
-            .AddTo(this);
+            .Where((hp) => hp <= 0)
+            .Subscribe(_ =>
+            {
+                ChangeState(new DeadState());
+                _onEnemyDeadSubject.OnNext(Unit.Default);
+            }) .AddTo(this);
 
         ChangeState(new PatrolState());
         StateLoopAsync(_cts.Token).Forget();

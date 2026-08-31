@@ -15,7 +15,7 @@ MonoBehaviour:
   _enemyName: Goon
   _maxHp: 1
   _attackPower: 1
-  _moveSpeed: 3
+  _moveSpeed: 2
   _detectionRange: 5
   _detectionAngle: 90
   _attackRange: 1.2
