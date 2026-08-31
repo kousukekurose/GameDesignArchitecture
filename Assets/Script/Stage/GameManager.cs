@@ -17,16 +17,17 @@ public class GameManager : MonoBehaviour
     public static ReadOnlyReactiveProperty<GameState> CurrentState => _currentState;
 
     // 💡 タイミングのすれ違いを防ぐため、最新の通知を1件記憶できる ReplaySubject に変更します！
-    private static readonly ReplaySubject<Unit> _playerGenerate = new(1);
+    private static readonly Subject<Unit> _playerGenerate = new();
     public static Observable<Unit> PlayerGenerate => _playerGenerate;
 
-    private static readonly ReplaySubject<Unit> _enemyGenerate = new(1);
+    private static readonly Subject<Unit> _enemyGenerate = new();
     public static Observable<Unit> EnemyGenerate => _enemyGenerate;
 
     private readonly CompositeDisposable _disposables = new();
     private CancellationTokenSource _gameCts;
 
     private List<GameObject> _enemy = new List<GameObject>();
+    private List<float> _time = new List<float>();
 
     [SerializeField] private GameObject _countDwonUIObj;
     [SerializeField] private GameObject _stageObj;
@@ -132,7 +133,7 @@ public class GameManager : MonoBehaviour
         {
             _enemy.Add(_enemyObj);
             Debug.Log(_enemy.Count);
-        }).AddTo(this);
+        }).AddTo(_disposables);
     }
 
     /// <summary>
@@ -199,6 +200,7 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("ゲームオーバー演出開始（画面フェードや暗転）");
         _enemyCount.Add(_countValue);
+        _time.Add(TimeCounter.CurrentTime);
         await UniTask.Delay(2000, cancellationToken: ct);
     }
 
@@ -206,6 +208,7 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("クリア演出開始");
         _enemyCount.Add(_countValue);
+        _time.Add(TimeCounter.CurrentTime);
         await UniTask.Delay(2000, cancellationToken: ct);
     }
 

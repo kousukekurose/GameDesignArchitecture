@@ -7,17 +7,14 @@ using Cysharp.Threading.Tasks;
 public class CountDownManager : MonoBehaviour
 {
     private static readonly Subject<Unit> _countDown = new();
-    public static Subject<Unit> CountDown = _countDown;
+    public static readonly Subject<Unit> CountDown = _countDown;
     private CancellationTokenSource _cts;
-    private Rigidbody2D _player;
 
     [SerializeField] private TextMeshProUGUI _countDownText;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Start()
     {
-        //_player = Player.Instance.GetComponent<Rigidbody2D>();
-        //_player.simulated = false;
         _cts = new CancellationTokenSource();
         StartCountdownAsync(_cts.Token).Forget();
         Debug.Log("生成されて呼ばれているか");
@@ -34,7 +31,6 @@ public class CountDownManager : MonoBehaviour
             }
             _countDownText.text = "Start";
             await UniTask.Delay(1000,cancellationToken:ct);
-            //_player.simulated = true;
             _countDown.OnNext(Unit.Default);
             Destroy(gameObject);
         }
