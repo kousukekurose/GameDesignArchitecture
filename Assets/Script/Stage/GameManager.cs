@@ -3,6 +3,8 @@ using R3;
 using Cysharp.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
+using unityroom.Api;
+
 
 public class GameManager : MonoBehaviour
 {
@@ -17,10 +19,10 @@ public class GameManager : MonoBehaviour
     public static ReadOnlyReactiveProperty<GameState> CurrentState => _currentState;
 
     // 💡 タイミングのすれ違いを防ぐため、最新の通知を1件記憶できる ReplaySubject に変更します！
-    private static readonly Subject<Unit> _playerGenerate = new();
+    private static readonly ReplaySubject<Unit> _playerGenerate = new();
     public static Observable<Unit> PlayerGenerate => _playerGenerate;
 
-    private static readonly Subject<Unit> _enemyGenerate = new();
+    private static readonly ReplaySubject<Unit> _enemyGenerate = new();
     public static Observable<Unit> EnemyGenerate => _enemyGenerate;
 
     private readonly CompositeDisposable _disposables = new();
@@ -29,8 +31,13 @@ public class GameManager : MonoBehaviour
     private List<GameObject> _enemy = new List<GameObject>();
     private List<float> _time = new List<float>();
 
+    public float LastScore => CalculateScore(_enemyCount.Count > 0 ? _enemyCount[_enemyCount.Count - 1] : 0, 
+                                           _time.Count > 0 ? _time[_time.Count - 1] : 0f);
+
     [SerializeField] private GameObject _countDwonUIObj;
     [SerializeField] private GameObject _stageObj;
+
+    private const int RANKING_ID = 1;
 
     public enum GameState { Initialize, Ready, Playing, GameOver, GameClear }
 
@@ -62,7 +69,9 @@ public class GameManager : MonoBehaviour
 
             // プレイヤーのイベント紐付け
             BindPlayerEvents();
+            Debug.Log("BindPlayerEvents");
             EnemyEvents();
+            Debug.Log("EnemyEvents");
             BindEnemySpawnEvents();
             Debug.Log("プレイヤーの生成を検知し、死亡イベントの紐付けに成功しました。");
 
@@ -201,6 +210,9 @@ public class GameManager : MonoBehaviour
         Debug.Log("ゲームオーバー演出開始（画面フェードや暗転）");
         _enemyCount.Add(_countValue);
         _time.Add(TimeCounter.CurrentTime);
+        float score = LastScore;
+        Debug.Log($"スコア: {score} (敵: {_countValue}, タイム: {TimeCounter.CurrentTime})");
+        UnityroomApiClient.Instance.SendScore(RANKING_ID, score, ScoreboardWriteMode.Always);
         await UniTask.Delay(2000, cancellationToken: ct);
     }
 
@@ -209,7 +221,17 @@ public class GameManager : MonoBehaviour
         Debug.Log("クリア演出開始");
         _enemyCount.Add(_countValue);
         _time.Add(TimeCounter.CurrentTime);
+        float score = LastScore;
+        Debug.Log($"スコア: {score} (敵: {_countValue}, タイム: {TimeCounter.CurrentTime})");
+        UnityroomApiClient.Instance.SendScore(RANKING_ID, score, ScoreboardWriteMode.Always);
         await UniTask.Delay(2000, cancellationToken: ct);
+    }
+
+    private float CalculateScore(int enemyCount, float time)
+    {
+         float enemyScore = enemyCount * 100f;
+         float timePenalty = time * 5f;
+        return Mathf.Max(0f, enemyScore - timePenalty);
     }
 
     private void OnDestroy()

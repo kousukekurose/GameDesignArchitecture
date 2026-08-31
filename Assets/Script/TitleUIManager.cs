@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 using System.Threading.Tasks;
 using System.Threading;
 
-public class UIManager : MonoBehaviour
+public class TitleUIManager : MonoBehaviour
 {
     [SerializeField] private Button _startButton;
     [SerializeField] private Button _controllersButton;
