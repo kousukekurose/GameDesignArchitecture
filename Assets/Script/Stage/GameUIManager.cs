@@ -17,23 +17,25 @@ public class GameUIManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        GameManager.CurrentState
+        GameManager.StateChanged
         .Subscribe(state =>
         {
             switch(state)
             {
-                case GameManager.GameState.Initialize:
-                _gameClearObject.SetActive(false);
-                _gameOverObject.SetActive(false);
-                break;
-                case GameManager.GameState.GameClear:
-                _gameClearObject.SetActive(true);
-                GameObjectButton(_gameClearObject);
-                break;
-                case GameManager.GameState.GameOver:
-                _gameOverObject.SetActive(true);
-                GameObjectButton(_gameOverObject);
-                break;
+                case GameManagerStateInitialize:
+                    _gameClearObject.SetActive(false);
+                    _gameOverObject.SetActive(false);
+                    break;
+                case GameManagerStateGameClear:
+                    Debug.Log("GameUIManager: Game Clear");
+                    _gameClearObject.SetActive(true);
+                    GameObjectButton(_gameClearObject);
+                    break;
+                case GameManagerStateGameOver:
+                    Debug.Log("GameUIManager: Game Over");
+                    _gameOverObject.SetActive(true);
+                    GameObjectButton(_gameOverObject);
+                    break;
             }
         }).AddTo(this);
     }
@@ -76,6 +78,13 @@ public class GameUIManager : MonoBehaviour
     {
         _titleButton.interactable = false;
         await UniTask.Delay(500,cancellationToken : ct);
+        
+        // シングルトンのリセット
+        GameManager.ResetInstance();
+        Player.ResetInstance();
+        PlayerVisual.ResetInstance();
+        PlayerController.ResetInstance();
+        
         await SceneManager.LoadSceneAsync("Title").WithCancellation(ct);
     } 
 

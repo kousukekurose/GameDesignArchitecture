@@ -16,10 +16,19 @@ public class PlayerController : MonoBehaviour
         if(Instance == null)Instance = this;
     }
 
+    public static void ResetInstance()
+    {
+        if (Instance != null)
+        {
+            Instance = null;
+        }
+    }
+
     private void Start()
     {
-        _player = GetComponent<Player>();
+        _player = Player.Instance;
     }
+    
     public void OnMove(InputAction.CallbackContext context)
     {
         _moveInputProp.Value = context.ReadValue<Vector2>();

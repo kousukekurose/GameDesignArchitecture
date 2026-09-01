@@ -171,6 +171,15 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
         }
     }
 
+    public static void ResetInstance()
+    {
+        if (Instance != null)
+        {
+            Destroy(Instance.gameObject);
+            Instance = null;
+        }
+    }
+
     private void OnDestroy()
     {
         _stateCts?.Cancel();

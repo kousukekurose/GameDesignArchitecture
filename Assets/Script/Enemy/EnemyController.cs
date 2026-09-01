@@ -92,7 +92,6 @@ public class EnemyController : MonoBehaviour, IEnemyController
         HitPlayer();
         if (IsObstacleOrCliffAhead())
         {
-            Debug.Log("確認");
             _isFacingRight = !_isFacingRight;
             Vector3 scale = transform.localScale;
             scale.x *= -1;

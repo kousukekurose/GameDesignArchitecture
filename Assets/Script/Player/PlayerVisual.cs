@@ -32,6 +32,14 @@ public class PlayerVisual : MonoBehaviour
         if (Instance == null) Instance = this;
     }
 
+    public static void ResetInstance()
+    {
+        if (Instance != null)
+        {
+            Instance = null;
+        }
+    }
+
     private void Start()
     {
         _isInvincible = false;

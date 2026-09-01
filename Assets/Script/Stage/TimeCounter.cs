@@ -15,31 +15,34 @@ public class TimeCounter : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        GameManager.CurrentState
+        GameManager.StateChanged
         .Subscribe(state =>
         {
             switch(state)
             {
-                case GameManager.GameState.Initialize:
+                case GameManagerStateInitialize:
                     _realTime = 0f;
                     CurrentTime= 0f;
                     _isCounting = false;
                     Debug.Log("タイムリセット確認");
                 break;
-                case GameManager.GameState.Playing:
+                case GameManagerStatePlaying:
                     _isCounting = true;
                     Debug.Log("タイム起動確認");
                 break;
-                case GameManager.GameState.GameClear:
+                case GameManagerStateGameClear:
                     _isCounting = false;
                     CurrentTime = _realTime;
+                    Debug.Log("タイムカウント停止GameManagerStateGameClear");
                 break;
-                case GameManager.GameState.GameOver:
+                case GameManagerStateGameOver:
                     _isCounting = false;
                     CurrentTime = _realTime;
+                    Debug.Log("タイムカウント停止GameManagerStateGameOver");
                 break;
                 default:
                     _isCounting = false;
+                    Debug.Log("タイムカウント停止default");
                 break;
             }
         } ).AddTo(this);
