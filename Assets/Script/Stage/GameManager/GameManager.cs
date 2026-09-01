@@ -33,7 +33,7 @@ public class GameManager : MonoBehaviour
     private List<float> _time = new List<float>();
 
     public float LastScore => CalculateScore(_enemyCount.Count > 0 ? _enemyCount[_enemyCount.Count - 1] : 0, 
-                                           _time.Count > 0 ? _time[_time.Count - 1] : 0f);
+                                            _time.Count > 0 ? _time[_time.Count - 1] : 0f);
 
     [SerializeField] public GameObject _countDwonUIObj;
     [SerializeField] public GameObject _stageObj;
@@ -114,6 +114,19 @@ public class GameManager : MonoBehaviour
             {
                 controller.enabled = enabled;
             }
+        }
+    }
+
+    public void SetPlayerPhysicsEnabled(bool enabled)
+    {
+        if(Player.Instance.TryGetComponent<Rigidbody2D>(out var _rd))
+        {
+            _rd.simulated = enabled;
+        }
+
+        if(Player.Instance.TryGetComponent<PlayerController>(out var controller))
+        {
+            controller.enabled = enabled;
         }
     }
 

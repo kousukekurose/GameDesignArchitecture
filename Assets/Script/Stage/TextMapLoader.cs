@@ -23,6 +23,7 @@ public class TextMapLoader : MonoBehaviour
     [SerializeField] private GameObject _playerPrefab;
     [SerializeField] private GameObject _enemyPrefab;
     [SerializeField] private GameObject _goalPrefab;
+    [SerializeField] private GameObject _deathPrefab;
 
     [Header("ーー 読み込むステージのテキストファイル名 ーー")]
     [SerializeField] private string _stageFileName = "Stage1"; 
@@ -96,7 +97,7 @@ public class TextMapLoader : MonoBehaviour
                             if (x < upperLine.Length)
                             {
                                 char upperTileChar = upperLine[x];
-                                if (upperTileChar == '.' || upperTileChar == 'E' || upperTileChar == 'P' || upperTileChar == '=')
+                                if (upperTileChar == '.' || upperTileChar == 'E' || upperTileChar == 'P' || upperTileChar == '='|| upperTileChar == 'G' || upperTileChar == 'D')
                                 {
                                     isSurface = true;
                                 }
@@ -149,6 +150,9 @@ public class TextMapLoader : MonoBehaviour
 
                     case 'G': // ゴール
                         Instantiate(_goalPrefab, worldPos, Quaternion.identity);
+                        break;
+                    case 'D': // 死亡判定
+                        Instantiate(_deathPrefab, worldPos, Quaternion.identity);
                         break;
                 }
             }

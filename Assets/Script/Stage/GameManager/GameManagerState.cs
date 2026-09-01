@@ -13,7 +13,6 @@ public class GameManagerStateInitialize : IGameManagerState
     public async UniTask EnterAsync(GameManager gameManager, CancellationToken ct)
     {
         _gameManager = gameManager;
-        Debug.Log("GameManagerStateInitialize.EnterAsync");
         
         Object.Instantiate(_gameManager._stageObj);
 
@@ -33,15 +32,10 @@ public class GameManagerStateInitialize : IGameManagerState
         {
             _gameManager.ChangeState(new GameManagerStateReady());
         }
-        else
-        {
-            Debug.LogWarning("GameManagerStateInitialize.EnterAsync: ステートが変更されました。");
-        }
     }
 
     public async UniTask ExitAsync(CancellationToken ct)
     {
-        Debug.Log("GameManagerStateInitialize.Exit");
         await UniTask.CompletedTask;
     }
 }
@@ -53,14 +47,12 @@ public class GameManagerStateReady : IGameManagerState
     public async UniTask EnterAsync(GameManager gameManager, CancellationToken ct)
     {
         _gameManager = gameManager;
-        Debug.Log("GameManagerStateReady.EnterAsync");
         
         Object.Instantiate(_gameManager._countDwonUIObj);
         _gameManager.SendEnemyGenerateNotification();
         
         // 物理演算の一時停止
-        Rigidbody2D _playerrd = Player.Instance.GetComponent<Rigidbody2D>();
-        _playerrd.simulated = false;
+        _gameManager.SetPlayerPhysicsEnabled(false);
         _gameManager.SetEnemyPhysicsEnabled(false);
         
         // カウントダウン終了を待つ
@@ -68,7 +60,7 @@ public class GameManagerStateReady : IGameManagerState
         
         // 物理演算の再開
         _gameManager.SetEnemyPhysicsEnabled(true);
-        _playerrd.simulated = true;
+        _gameManager.SetPlayerPhysicsEnabled(true);
         
         if(_gameManager._currentGameState == this)
         {
@@ -78,7 +70,6 @@ public class GameManagerStateReady : IGameManagerState
 
     public async UniTask ExitAsync(CancellationToken ct)
     {
-        Debug.Log("GameManagerStateReady.Exit");
         await UniTask.CompletedTask;
     }
 }
@@ -92,7 +83,6 @@ public class GameManagerStatePlaying : IGameManagerState
     public async UniTask EnterAsync(GameManager gameManager, CancellationToken ct)
     {
         _gameManager = gameManager;
-        Debug.Log("GameManagerStatePlaying.EnterAsync");
 
         // ★プレイ中ステートに入った瞬間にイベントを紐付ける
         Player.Instance.OnDeath
@@ -102,14 +92,16 @@ public class GameManagerStatePlaying : IGameManagerState
         GoalController.GoalTrigger
             .Subscribe(_ => _gameManager.ChangeState(new GameManagerStateGameClear()))
             .AddTo(_disposables);
+
+        DeathController.DeathTrigger
+            .Subscribe(_ => _gameManager.ChangeState(new GameManagerStateGameOver()))
+            .AddTo(_disposables);
         
         await UniTask.CompletedTask;
     }
 
     public async UniTask ExitAsync(CancellationToken ct)
     {
-        Debug.Log("GameManagerStatePlaying.Exit");
-        // ★最重要：プレイ終了（クリアや死亡）時に監視を完全に解除してメモリを解放する！
         _disposables.Dispose();
         await UniTask.CompletedTask;
     }
@@ -122,13 +114,11 @@ public class GameManagerStateGameOver : IGameManagerState
     {
         _gameManager = gameManager;
         Debug.Log("GameManagerStateGameOver.EnterAsync");
+        _gameManager.SetPlayerPhysicsEnabled(false);
         await _gameManager.GameOverSequenceAsync(ct);
     }
 
-    public async UniTask ExitAsync(CancellationToken ct)
-    {
-        Debug.Log("GameManagerStateGameOver.Exit");
-    }
+    public async UniTask ExitAsync(CancellationToken ct){}
 }
 
 public class GameManagerStateGameClear : IGameManagerState
@@ -138,11 +128,9 @@ public class GameManagerStateGameClear : IGameManagerState
     {
         _gameManager = gameManager;
         Debug.Log("GameManagerStateGameClear.EnterAsync");
+        _gameManager.SetPlayerPhysicsEnabled(false);
         await _gameManager.GameClearSequenceAsync(ct);
     }
 
-    public async UniTask ExitAsync(CancellationToken ct)
-    {
-        Debug.Log("GameManagerStateGameClear.Exit");
-    }
+    public async UniTask ExitAsync(CancellationToken ct){}
 }

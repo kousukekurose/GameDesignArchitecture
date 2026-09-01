@@ -263,4 +263,5 @@ MonoBehaviour:
   _playerPrefab: {fileID: 3583546198939162654, guid: e27b0e0e8a6914bf39e945479ae263a2, type: 3}
   _enemyPrefab: {fileID: 6548819112789204400, guid: 1e332977be6d249d8b84aae519e606a1, type: 3}
   _goalPrefab: {fileID: 3452939306524676481, guid: 3004f5295acb54c39a89a6356db5de8b, type: 3}
+  _deathPrefab: {fileID: 8900956008092065291, guid: 38150f5c344014b599095d6ca79b50a3, type: 3}
   _stageFileName: Stage01
