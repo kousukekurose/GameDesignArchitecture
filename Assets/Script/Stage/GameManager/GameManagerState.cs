@@ -27,6 +27,7 @@ public class GameManagerStateInitialize : IGameManagerState
         
         // エネミーのイベント紐付け（GameManager側で適切に管理されている前提）
         _gameManager.BindEnemySpawnEvents();
+        _gameManager.EnemyEvents();
 
         if(_gameManager._currentGameState == this)
         {

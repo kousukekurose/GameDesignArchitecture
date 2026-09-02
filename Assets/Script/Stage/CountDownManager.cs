@@ -15,6 +15,7 @@ public class CountDownManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Start()
     {
+        transform.position = MainCamera.Instance.transform.position + new Vector3(0, 0, 1);
         _cts = new CancellationTokenSource();
         StartCountdownAsync(_cts.Token).Forget();
         Debug.Log("生成されて呼ばれているか");

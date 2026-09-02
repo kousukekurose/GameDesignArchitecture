@@ -95,10 +95,11 @@ public class GameManager : MonoBehaviour
     public void BindEnemySpawnEvents()
     {
         TextMapLoader.EnemyObj
-        .Subscribe(_enemyObj =>
-        {
-            _enemy.Add(_enemyObj);
-        }).AddTo(_disposables);
+            .Subscribe(_enemyObj =>
+            {
+                _enemy.Add(_enemyObj);
+                Debug.Log($"【GameManager】エネミーをリストに登録しました。 現在の登録数: {_enemy.Count}");
+            }).AddTo(_disposables); // ★シーン終了時にきれいに片付く
     }
 
     public void SetEnemyPhysicsEnabled(bool enabled)
@@ -146,7 +147,8 @@ public class GameManager : MonoBehaviour
         Debug.Log("クリア演出開始");
         _enemyCount.Add(_countValue);
         _time.Add(TimeCounter.CurrentTime);
-        float score = LastScore;
+        //float score = LastScore;
+        int score = Mathf.RoundToInt(LastScore); 
         Debug.Log($"スコア: {score} (敵: {_countValue}, タイム: {TimeCounter.CurrentTime})");
         UnityroomApiClient.Instance.SendScore(RANKING_ID, score, ScoreboardWriteMode.Always);
         await UniTask.Delay(2000, cancellationToken: ct);
