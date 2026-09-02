@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 053a303e42ccf42329942a42c25fa536, type: 3}
+  m_Name: ThrowEnemyData
+  m_EditorClassIdentifier: Assembly-CSharp::ThrowEnemyData
+  _enemyName: Goon
+  _maxHp: 3
+  _attackPower: 3
+  _moveSpeed: 0
+  _detectionRange: 5
+  _detectionAngle: 90
+  _attackRange: 1.2
+  _wallCheckDistance: 0.3
+  _cliffCheckDistance: 0.5
+  ThrowPrefab: {fileID: 0}
+  _throwForce: 0

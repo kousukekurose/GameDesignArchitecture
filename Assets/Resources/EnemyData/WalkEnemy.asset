@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c6bedfaab655c4fc5a8d6bc27761acc2, type: 3}
-  m_Name: Patrol
+  m_Name: WalkEnemy
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   _enemyName: Goon
   _maxHp: 1

@@ -26,4 +26,9 @@ public class EnemyData : ScriptableObject
     public float AttackRange => _attackRange;
     public float WallCheckDistance => _wallCheckDistance;
     public float CliffCheckDistance => _cliffCheckDistance;
+
+    public virtual IEnemyState GetInitialState()
+    {
+        return new PatrolState();
+    }
 }

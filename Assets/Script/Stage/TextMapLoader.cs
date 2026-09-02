@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine;
@@ -10,24 +9,23 @@ public class TextMapLoader : MonoBehaviour
     public static Subject<Unit> MapGenerate => _mapGenerate;
 
     private static readonly Subject<GameObject> _enemyObj = new Subject<GameObject>();
-
     public static Subject<GameObject> EnemyObj => _enemyObj;
 
     [Header("ーー 使用するアセット（Tile） ーー")]
     [SerializeField] private Tilemap _tilemap;
-    [SerializeField] private TileBase _grassTile;     // 1番上の列（表面）に敷く草タイル
-    [SerializeField] private TileBase _dirtTile;      // 2本目以降の列（地中）に敷く土タイル
-    [SerializeField] private TileBase _platformTile;  // 🟩 追加：= に対応する空中足場タイル
+    [SerializeField] private TileBase _grassTile;     
+    [SerializeField] private TileBase _dirtTile;      
+    [SerializeField] private TileBase _platformTile;  
 
     [Header("ーー 使用するアセット（Prefab） ーー")]
     [SerializeField] private GameObject _playerPrefab;
     [SerializeField] private GameObject _enemyPrefab;
     [SerializeField] private GameObject _goalPrefab;
+    [SerializeField] private GameObject _deathPrefab;
+    [SerializeField] private GameObject _fieldPrefab;
 
     [Header("ーー 読み込むステージのテキストファイル名 ーー")]
     [SerializeField] private string _stageFileName = "Stage1"; 
-
-    private readonly CompositeDisposable _disposables = new();
 
     private string[] _stageLines;
     private int _mapHeight;
@@ -38,19 +36,22 @@ public class TextMapLoader : MonoBehaviour
         _tilemap.ClearAllTiles();
         ParseTextData();
 
+        // 💡 プレイヤーの生成・配置
         GameManager.PlayerGenerate
-        .Subscribe(_ =>
-        {
-            Debug.Log("プレイヤースポーンを生成");
-            GenerateObjectPlayerGenerate();
-        }).AddTo(this);
+            .Take(1) // リトライ時の多重実行を防ぐ安全策
+            .Subscribe(_ =>
+            {
+                Debug.Log("プレイヤースポーンを生成");
+                GeneratePlayerOnly();
+            }).AddTo(this);
 
+        // 💡 敵の生成
         GameManager.EnemyGenerate
-        .Take(1)
-        .Subscribe(_ =>
-        {
-            GenerateObjectsOnly();
-        }).AddTo(this);
+            .Take(1) // 多重生成を防ぐ
+            .Subscribe(_ =>
+            {
+                GenerateObjectsOnly();
+            }).AddTo(this);
     }
 
     private void ParseTextData()
@@ -70,10 +71,13 @@ public class TextMapLoader : MonoBehaviour
         {
             if (line.Length > _maxMapWidth) _maxMapWidth = line.Length;
         }
-        GenerateTilemapOnly();
+        
+        // 💡 タイルを敷くタイミングで、動かない固定オブジェクト（ゴール等）も一緒に生成してしまう
+        GenerateTilemapAndStaticObjects();
     }
 
-    private void GenerateTilemapOnly()
+    // 💡 タイルと固定オブジェクト（ゴール・死亡判定・フィールド）を1回だけ生成する
+    private void GenerateTilemapAndStaticObjects()
     {
         if (_stageLines == null) return;
 
@@ -85,6 +89,7 @@ public class TextMapLoader : MonoBehaviour
                 char tileChar = (x < line.Length) ? line[x] : '.';
                 int worldY = _mapHeight - 1 - y; 
                 Vector3Int cellPos = new Vector3Int(x, worldY, 0);
+                Vector3 worldPos = _tilemap.CellToWorld(cellPos) + new Vector3(0.5f, 0.5f, 0f);
 
                 switch (tileChar)
                 {
@@ -96,7 +101,7 @@ public class TextMapLoader : MonoBehaviour
                             if (x < upperLine.Length)
                             {
                                 char upperTileChar = upperLine[x];
-                                if (upperTileChar == '.' || upperTileChar == 'E' || upperTileChar == 'P' || upperTileChar == '=')
+                                if (upperTileChar == '.' || upperTileChar == 'E' || upperTileChar == 'P' || upperTileChar == '='|| upperTileChar == 'G' || upperTileChar == 'D'|| upperTileChar == 'F')
                                 {
                                     isSurface = true;
                                 }
@@ -112,14 +117,25 @@ public class TextMapLoader : MonoBehaviour
                     case '=': // 空中足場
                         _tilemap.SetTile(cellPos, _platformTile != null ? _platformTile : _grassTile);
                         break;
+
+                    // 💡 ゴール・死亡判定などは、プレイヤーの通知とは切り離してここで1回だけ生成
+                    case 'G': 
+                        Instantiate(_goalPrefab, worldPos, Quaternion.identity);
+                        break;
+                    case 'D': 
+                        Instantiate(_deathPrefab, worldPos, Quaternion.identity);
+                        break;
+                    case 'F': 
+                        Instantiate(_fieldPrefab, worldPos, Quaternion.identity);
+                        break;
                 }
             }
         }
-        Debug.Log("地形（タイルマップ）の先行生成が完了しました。");
         MapGenerate.OnNext(Unit.Default);
     }
 
-    private void GenerateObjectPlayerGenerate()
+    // 💡 プレイヤーの生成・位置変更だけを純粋に行う
+    private void GeneratePlayerOnly()
     {
         if (_stageLines == null) return;
 
@@ -129,34 +145,27 @@ public class TextMapLoader : MonoBehaviour
             for (int x = 0; x < _maxMapWidth; x++)
             {
                 char tileChar = (x < line.Length) ? line[x] : '.';
-                int worldY = _mapHeight - 1 - y; 
-                Vector3Int cellPos = new Vector3Int(x, worldY, 0);
-                
-                // 💡 すでに足場のタイルは敷かれているので、安全にセル座標からワールド座標に変換できる
-                Vector3 worldPos = _tilemap.CellToWorld(cellPos) + new Vector3(0.5f, 0.5f, 0f);
-
-                switch (tileChar)
+                if (tileChar == 'P')
                 {
-                    case 'P': // プレイヤー
-                        if (Player.Instance == null)
-                        {
-                            Instantiate(_playerPrefab, worldPos, Quaternion.identity);
-                        }
-                        else
-                        {
-                            Player.Instance.transform.position = worldPos;
-                        }
-                        break;
+                    int worldY = _mapHeight - 1 - y; 
+                    Vector3Int cellPos = new Vector3Int(x, worldY, 0);
+                    Vector3 worldPos = _tilemap.CellToWorld(cellPos) + new Vector3(0.5f, 0.5f, 0f);
 
-                    case 'G': // ゴール
-                        Instantiate(_goalPrefab, worldPos, Quaternion.identity);
-                        break;
+                    if (Player.Instance == null)
+                    {
+                        Instantiate(_playerPrefab, worldPos, Quaternion.identity);
+                    }
+                    else
+                    {
+                        Player.Instance.transform.position = worldPos;
+                    }
+                    return; // プレイヤーが見つかったら終了
                 }
             }
         }
-        Debug.Log("プレイヤー、ゴールの配置が安全に完了しました！");
     }
 
+    // 💡 敵の生成（元のまま）
     private void GenerateObjectsOnly()
     {
         if (_stageLines == null) return;
@@ -167,21 +176,16 @@ public class TextMapLoader : MonoBehaviour
             for (int x = 0; x < _maxMapWidth; x++)
             {
                 char tileChar = (x < line.Length) ? line[x] : '.';
-                int worldY = _mapHeight - 1 - y; 
-                Vector3Int cellPos = new Vector3Int(x, worldY, 0);
-                
-                // 💡 すでに足場のタイルは敷かれているので、安全にセル座標からワールド座標に変換できる
-                Vector3 worldPos = _tilemap.CellToWorld(cellPos) + new Vector3(0.5f, 0.5f, 0f);
-
-                switch (tileChar)
+                if (tileChar == 'E')
                 {
-                    case 'E': // 敵
-                        GameObject _spawnEnemy = Instantiate(_enemyPrefab, worldPos, Quaternion.identity);
-                        _enemyObj.OnNext(_spawnEnemy);
-                        break;
+                    int worldY = _mapHeight - 1 - y; 
+                    Vector3Int cellPos = new Vector3Int(x, worldY, 0);
+                    Vector3 worldPos = _tilemap.CellToWorld(cellPos) + new Vector3(0.5f, 0.5f, 0f);
+
+                    GameObject _spawnEnemy = Instantiate(_enemyPrefab, worldPos, Quaternion.identity);
+                    _enemyObj.OnNext(_spawnEnemy);
                 }
             }
         }
-        Debug.Log("敵の配置が安全に完了しました！");
     }
 }

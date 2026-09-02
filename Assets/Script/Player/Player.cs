@@ -2,7 +2,6 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using R3;
 using System.Threading;
-using UnityEngine.UIElements;
 
 public class Player : MonoBehaviour, IDamageable,IAttacker
 {
@@ -10,9 +9,6 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
     
     private IPlayerState _currentState;
     public IPlayerState CurrentState => _currentState;
-
-    private readonly Subject<Unit> _onDeathSubject = new();
-    public Observable<Unit> OnDeath => _onDeathSubject;
 
     [Header("移動・ジャンプ設定")]
     [SerializeField] private float _moveSpeed = 5.0f;
@@ -23,11 +19,8 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
     public float JumpForce { get=> _jumpForce; private set => _jumpForce = value; }
     public float _enemyBoundForce { get; private set; } = 5.0f;
     public float _groundCheckOffset { get; private set; } = 0.1f;
-
     public int _attackPower {get; private set;} = 1;
-
     public int _DamageAmount => _attackPower;
-
     public bool IsTouchingWallLeft { get; private set; }
     public bool IsTouchingWallRight { get; private set; }
 
@@ -40,13 +33,14 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
     [Header("状態フラグ")]
     public bool _isGround { get; set; } = false;
     public bool _hasStomped { get; set; } = false;
-
+    
     // コンポーネント・レイヤー設定
     public Collider2D _collider2D { get; private set; }
     public Rigidbody2D _rd { get; private set; }
     public LayerMask _groundLayer { get; private set; }
     public LayerMask _enemyLayer { get; private set; }
     public LayerMask _nullEnemyLayer { get; private set; }
+    public Animator _animator { get; private set; }
 
     private CancellationTokenSource _stateCts;
     private CompositeDisposable _disposables;
@@ -71,6 +65,7 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
         _isSprint = false;
         _currentHp = _playerHp;
         _rd = GetComponent<Rigidbody2D>();
+        _animator = GetComponent<Animator>();
         _collider2D = GetComponent<Collider2D>();
         _groundLayer = LayerMask.GetMask("Ground");
         _enemyLayer = LayerMask.GetMask("Enemy");
@@ -160,7 +155,7 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
         {
             _currentHp = 0; 
             ChangeState(new PlayerStateDie(this));
-            _onDeathSubject.OnNext(Unit.Default);
+            //_onDeathSubject.OnNext(Unit.Default);
         }
         else
         {
@@ -168,6 +163,15 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
             {
                 PlayerVisual.Instance.StartInvincibleFlash();
             }
+        }
+    }
+
+    public static void ResetInstance()
+    {
+        if (Instance != null)
+        {
+            Destroy(Instance.gameObject);
+            Instance = null;
         }
     }
 

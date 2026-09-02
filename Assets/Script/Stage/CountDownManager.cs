@@ -9,12 +9,12 @@ public class CountDownManager : MonoBehaviour
     private static readonly Subject<Unit> _countDown = new();
     public static readonly Subject<Unit> CountDown = _countDown;
     private CancellationTokenSource _cts;
-
     [SerializeField] private TextMeshProUGUI _countDownText;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Start()
     {
+        transform.position = MainCamera.Instance.transform.position + new Vector3(0, 0, 1);
         _cts = new CancellationTokenSource();
         StartCountdownAsync(_cts.Token).Forget();
         Debug.Log("生成されて呼ばれているか");

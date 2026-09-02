@@ -9,15 +9,11 @@ public class EnemyController : MonoBehaviour, IEnemyController
     private Enemy _enemy;
     private static readonly Subject<Unit> _onEnemyDeadSubject = new();
     public static Observable <Unit> OnEnemyDead => _onEnemyDeadSubject;
-
     [SerializeField] private EnemyVisual visual;
-    //[SerializeField] private Rigidbody2D rb2d;
     [SerializeField] private Transform eyesLocation;      
     [SerializeField] private Transform groundCheckPoint;   
-
     public Enemy Enemy => _enemy;
     public EnemyVisual Visual => visual;
-
     private IEnemyState _currentState;
     private CancellationTokenSource _cts;
     private bool _isFacingRight = true;
@@ -41,7 +37,7 @@ public class EnemyController : MonoBehaviour, IEnemyController
                 _onEnemyDeadSubject.OnNext(Unit.Default);
             }) .AddTo(this);
 
-        ChangeState(new PatrolState());
+        ChangeState(_enemy.Data.GetInitialState());
         StateLoopAsync(_cts.Token).Forget();
     }
 
@@ -92,7 +88,6 @@ public class EnemyController : MonoBehaviour, IEnemyController
         HitPlayer();
         if (IsObstacleOrCliffAhead())
         {
-            Debug.Log("確認");
             _isFacingRight = !_isFacingRight;
             Vector3 scale = transform.localScale;
             scale.x *= -1;
@@ -108,6 +103,30 @@ public class EnemyController : MonoBehaviour, IEnemyController
         float currentSpeed = _isFacingRight ? _enemy.Speed : -_enemy.Speed;
         _enemy._rd.linearVelocity = new Vector2(currentSpeed, _enemy._rd.linearVelocity.y);
         await UniTask.Yield(PlayerLoopTiming.Update, ct);
+    }
+
+    public async UniTask JumpAsync(CancellationToken ct)
+    {
+        if (_enemy._rd.linearVelocity.y == 0 && _enemy.Data is JumpEnemyData jumpData)
+        {
+            _enemy._rd.AddForce(new Vector2(0, jumpData.JumpForce), ForceMode2D.Impulse);
+            await UniTask.Delay(System.TimeSpan.FromSeconds(0.1f), cancellationToken: ct);
+        }
+    }
+
+    public async UniTask ThrowAsync(CancellationToken ct)
+    {
+        if (_enemy.Data is ThrowEnemyData throwData && throwData.GetThrowPrefab() != null)
+        {
+            GameObject throwObj = Instantiate(throwData.GetThrowPrefab(), eyesLocation.position, Quaternion.identity);
+            Rigidbody2D throwRb = throwObj.GetComponent<Rigidbody2D>();
+            if (throwRb != null)
+            {
+                float throwDirection = _isFacingRight ? 1f : -1f;
+                throwRb.AddForce(new Vector2(throwDirection * throwData.ThrowForce, 0), ForceMode2D.Impulse);
+            }
+            await UniTask.Delay(System.TimeSpan.FromSeconds(0.1f), cancellationToken: ct);
+        }
     }
 
         public void HitPlayer()
@@ -165,7 +184,6 @@ public class EnemyController : MonoBehaviour, IEnemyController
             }
         }
     }
-
 
     private void OnDestroy()
     {

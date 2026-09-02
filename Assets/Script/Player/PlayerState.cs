@@ -78,6 +78,8 @@ public class PlayerStateIdle : PlayerStateGroundBase
     {
         _player = player;
         _player._rd.linearVelocity = new Vector2(0f, _player._rd.linearVelocity.y);
+        _player._animator.SetBool("Idle", true);
+        _player._animator.SetBool("Walk", false);
 
         await base.EnterAsync(player,ct);
     }
@@ -86,6 +88,15 @@ public class PlayerStateIdle : PlayerStateGroundBase
 public class PlayerStateMove : PlayerStateGroundBase
 {
     public PlayerStateMove(Player player) : base(player) { }
+
+    public override async UniTask EnterAsync(Player player,CancellationToken ct)
+    {
+        _player = player;
+        _player._animator.SetBool("Walk", true);
+        _player._animator.SetBool("Idle", false);
+
+        await base.EnterAsync(player,ct);
+    }
 
     protected override void TickUpdate()
     {
@@ -247,13 +258,15 @@ public class PlayerStateDie : IPlayerState
     {
         player = _player;
         player._collider2D.isTrigger = true;
+        _player._animator.SetBool("Walk", false);
+        _player._animator.SetBool("Idle", false);
+        _player._animator.SetTrigger("Hit");
         if (PlayerVisual.Instance != null)
         {
             PlayerVisual.Instance.PlayDieAnimation(_player._rd, _player.JumpForce);
         }
 
         await UniTask.Delay(System.TimeSpan.FromSeconds(2),cancellationToken: ct);
-        //Object.Destroy(_player.gameObject);
     }
     public void Exit() { }
 }

@@ -1,9 +1,12 @@
 using System.Collections;
 using UnityEngine;
-
+using R3;
 public class PlayerVisual : MonoBehaviour
 {
     public static PlayerVisual Instance { get; private set; }
+
+    private readonly Subject<Unit> _onDeathSubject = new();
+    public Observable<Unit> OnDeath => _onDeathSubject;
 
     private SpriteRenderer _spriteRenderer;
 
@@ -18,7 +21,8 @@ public class PlayerVisual : MonoBehaviour
     // 見えている（濃い）時間
     [SerializeField] private float _visibleDuration = 0.1f;
     // ダメージを受けた時の透明度（0.0〜1.0）   
-    [SerializeField] private float _flashAlpha = 0.3f;        
+    [SerializeField] private float _flashAlpha = 0.3f;   
+
     [Header("死亡アニメーション設定")]
     // 死亡時にキャラクターが傾く角度
     [SerializeField] private float _dieRotateAngle = 10f;
@@ -30,6 +34,14 @@ public class PlayerVisual : MonoBehaviour
     private void Awake()
     {
         if (Instance == null) Instance = this;
+    }
+
+    public static void ResetInstance()
+    {
+        if (Instance != null)
+        {
+            Instance = null;
+        }
     }
 
     private void Start()
@@ -58,6 +70,7 @@ public class PlayerVisual : MonoBehaviour
 
     private IEnumerator IsInvincible()
     {
+        Player.Instance._animator.SetTrigger("Hit");
         for (int i = 0; i < _flashCount; i++)
         {
             _spriteRenderer.color = new Color(1f, 1f, 1f, _flashAlpha);
@@ -90,5 +103,7 @@ public class PlayerVisual : MonoBehaviour
         yield return new WaitForSeconds(_dieAnimationDelay);
         _rd.linearVelocity = new Vector2(_rd.linearVelocity.x, 0f);
         Destroy(_rd);
+        yield return new WaitForSeconds(1f);
+        _onDeathSubject.OnNext(Unit.Default);
     }
 }
