@@ -10,6 +10,9 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
     private IPlayerState _currentState;
     public IPlayerState CurrentState => _currentState;
 
+    private static readonly Subject<Unit> _visual = new();
+    public static Observable<Unit> Visual => _visual;
+
     [Header("移動・ジャンプ設定")]
     [SerializeField] private float _moveSpeed = 5.0f;
     [SerializeField] private float _sprintSpeed = 10f;
@@ -33,7 +36,7 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
     [Header("状態フラグ")]
     public bool _isGround { get; set; } = false;
     public bool _hasStomped { get; set; } = false;
-    
+
     // コンポーネント・レイヤー設定
     public Collider2D _collider2D { get; private set; }
     public Rigidbody2D _rd { get; private set; }
@@ -155,13 +158,13 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
         {
             _currentHp = 0; 
             ChangeState(new PlayerStateDie(this));
-            //_onDeathSubject.OnNext(Unit.Default);
         }
         else
         {
             if (PlayerVisual.Instance != null)
             {
-                PlayerVisual.Instance.StartInvincibleFlash();
+                //PlayerVisual.Instance.StartInvincibleFlash();
+                _visual.OnNext(Unit.Default);
             }
         }
     }

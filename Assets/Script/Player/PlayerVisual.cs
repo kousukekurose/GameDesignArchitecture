@@ -29,6 +29,8 @@ public class PlayerVisual : MonoBehaviour
     // 死亡演出が始まってから動きを止めるまでの秒数     
     [SerializeField] private float _dieAnimationDelay = 4f;   
 
+    private CompositeDisposable _disposables;
+
     public bool _isInvincible { get; private set; }
 
     private void Awake()
@@ -47,7 +49,13 @@ public class PlayerVisual : MonoBehaviour
     private void Start()
     {
         _isInvincible = false;
+        _disposables = new CompositeDisposable();
         _spriteRenderer = GetComponent<SpriteRenderer>();
+        Player.Visual
+        .Subscribe(_ =>
+        {
+            StartInvincibleFlash();
+        }).AddTo(_disposables);
     }
 
     public void ChangeDirection(float moveInputX)
@@ -105,5 +113,10 @@ public class PlayerVisual : MonoBehaviour
         Destroy(_rd);
         yield return new WaitForSeconds(1f);
         _onDeathSubject.OnNext(Unit.Default);
+    }
+
+    private void OnDestroy()
+    {
+        _disposables.Dispose();
     }
 }
