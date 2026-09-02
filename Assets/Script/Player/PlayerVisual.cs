@@ -1,9 +1,12 @@
 using System.Collections;
 using UnityEngine;
-
+using R3;
 public class PlayerVisual : MonoBehaviour
 {
     public static PlayerVisual Instance { get; private set; }
+
+    private readonly Subject<Unit> _onDeathSubject = new();
+    public Observable<Unit> OnDeath => _onDeathSubject;
 
     private SpriteRenderer _spriteRenderer;
 
@@ -66,6 +69,7 @@ public class PlayerVisual : MonoBehaviour
 
     private IEnumerator IsInvincible()
     {
+        Player.Instance._animator.SetTrigger("Hit");
         for (int i = 0; i < _flashCount; i++)
         {
             _spriteRenderer.color = new Color(1f, 1f, 1f, _flashAlpha);
@@ -98,5 +102,7 @@ public class PlayerVisual : MonoBehaviour
         yield return new WaitForSeconds(_dieAnimationDelay);
         _rd.linearVelocity = new Vector2(_rd.linearVelocity.x, 0f);
         Destroy(_rd);
+        yield return new WaitForSeconds(1f);
+        _onDeathSubject.OnNext(Unit.Default);
     }
 }

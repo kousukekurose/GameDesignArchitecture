@@ -20,6 +20,9 @@ public class Enemy : MonoBehaviour,IAttacker,IDamageable
     public Rigidbody2D _rd{get;private set;}
     public LayerMask _playerLayer {get; private set;}
 
+    [SerializeField] private Animator _animator;
+    public Animator Animator => _animator;
+
     private void Awake()
     {
         _enemyData = Resources.Load<EnemyData>($"EnemyData/{enemyId}");

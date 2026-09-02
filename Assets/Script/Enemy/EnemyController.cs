@@ -41,7 +41,7 @@ public class EnemyController : MonoBehaviour, IEnemyController
                 _onEnemyDeadSubject.OnNext(Unit.Default);
             }) .AddTo(this);
 
-        ChangeState(new PatrolState());
+        ChangeState(_enemy.Data.GetInitialState());
         StateLoopAsync(_cts.Token).Forget();
     }
 
@@ -107,6 +107,30 @@ public class EnemyController : MonoBehaviour, IEnemyController
         float currentSpeed = _isFacingRight ? _enemy.Speed : -_enemy.Speed;
         _enemy._rd.linearVelocity = new Vector2(currentSpeed, _enemy._rd.linearVelocity.y);
         await UniTask.Yield(PlayerLoopTiming.Update, ct);
+    }
+
+    public async UniTask JumpAsync(CancellationToken ct)
+    {
+        if (_enemy._rd.linearVelocity.y == 0 && _enemy.Data is JumpEnemyData jumpData)
+        {
+            _enemy._rd.AddForce(new Vector2(0, jumpData.JumpForce), ForceMode2D.Impulse);
+            await UniTask.Delay(System.TimeSpan.FromSeconds(0.1f), cancellationToken: ct);
+        }
+    }
+
+    public async UniTask ThrowAsync(CancellationToken ct)
+    {
+        if (_enemy.Data is ThrowEnemyData throwData && throwData.GetThrowPrefab() != null)
+        {
+            GameObject throwObj = Instantiate(throwData.GetThrowPrefab(), eyesLocation.position, Quaternion.identity);
+            Rigidbody2D throwRb = throwObj.GetComponent<Rigidbody2D>();
+            if (throwRb != null)
+            {
+                float throwDirection = _isFacingRight ? 1f : -1f;
+                throwRb.AddForce(new Vector2(throwDirection * throwData.ThrowForce, 0), ForceMode2D.Impulse);
+            }
+            await UniTask.Delay(System.TimeSpan.FromSeconds(0.1f), cancellationToken: ct);
+        }
     }
 
         public void HitPlayer()

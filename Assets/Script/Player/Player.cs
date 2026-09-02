@@ -11,9 +11,6 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
     private IPlayerState _currentState;
     public IPlayerState CurrentState => _currentState;
 
-    private readonly Subject<Unit> _onDeathSubject = new();
-    public Observable<Unit> OnDeath => _onDeathSubject;
-
     [Header("移動・ジャンプ設定")]
     [SerializeField] private float _moveSpeed = 5.0f;
     [SerializeField] private float _sprintSpeed = 10f;
@@ -47,6 +44,7 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
     public LayerMask _groundLayer { get; private set; }
     public LayerMask _enemyLayer { get; private set; }
     public LayerMask _nullEnemyLayer { get; private set; }
+    public Animator _animator { get; private set; }
 
     private CancellationTokenSource _stateCts;
     private CompositeDisposable _disposables;
@@ -71,6 +69,7 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
         _isSprint = false;
         _currentHp = _playerHp;
         _rd = GetComponent<Rigidbody2D>();
+        _animator = GetComponent<Animator>();
         _collider2D = GetComponent<Collider2D>();
         _groundLayer = LayerMask.GetMask("Ground");
         _enemyLayer = LayerMask.GetMask("Enemy");
@@ -160,7 +159,7 @@ public class Player : MonoBehaviour, IDamageable,IAttacker
         {
             _currentHp = 0; 
             ChangeState(new PlayerStateDie(this));
-            _onDeathSubject.OnNext(Unit.Default);
+            //_onDeathSubject.OnNext(Unit.Default);
         }
         else
         {

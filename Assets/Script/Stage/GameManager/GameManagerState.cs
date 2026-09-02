@@ -86,7 +86,7 @@ public class GameManagerStatePlaying : IGameManagerState
         _gameManager = gameManager;
 
         // ★プレイ中ステートに入った瞬間にイベントを紐付ける
-        Player.Instance.OnDeath
+        PlayerVisual.Instance.OnDeath
             .Subscribe(_ => _gameManager.ChangeState(new GameManagerStateGameOver()))
             .AddTo(_disposables);
         
@@ -119,7 +119,7 @@ public class GameManagerStateGameOver : IGameManagerState
         await _gameManager.GameOverSequenceAsync(ct);
     }
 
-    public async UniTask ExitAsync(CancellationToken ct){}
+    public UniTask ExitAsync(CancellationToken ct) => UniTask.CompletedTask;
 }
 
 public class GameManagerStateGameClear : IGameManagerState
@@ -133,5 +133,5 @@ public class GameManagerStateGameClear : IGameManagerState
         await _gameManager.GameClearSequenceAsync(ct);
     }
 
-    public async UniTask ExitAsync(CancellationToken ct){}
+    public UniTask ExitAsync(CancellationToken ct) => UniTask.CompletedTask;
 }

@@ -9,4 +9,7 @@ public interface IEnemyController
     void ChangeState(IEnemyState newState);
     bool IsObstacleOrCliffAhead();
     UniTask MovePatrolAsync(CancellationToken ct);
+
+    UniTask JumpAsync(CancellationToken ct);
+    UniTask ThrowAsync(CancellationToken ct);
 }
