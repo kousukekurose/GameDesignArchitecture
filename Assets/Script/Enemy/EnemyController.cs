@@ -9,15 +9,11 @@ public class EnemyController : MonoBehaviour, IEnemyController
     private Enemy _enemy;
     private static readonly Subject<Unit> _onEnemyDeadSubject = new();
     public static Observable <Unit> OnEnemyDead => _onEnemyDeadSubject;
-
     [SerializeField] private EnemyVisual visual;
-    //[SerializeField] private Rigidbody2D rb2d;
     [SerializeField] private Transform eyesLocation;      
     [SerializeField] private Transform groundCheckPoint;   
-
     public Enemy Enemy => _enemy;
     public EnemyVisual Visual => visual;
-
     private IEnemyState _currentState;
     private CancellationTokenSource _cts;
     private bool _isFacingRight = true;
@@ -188,7 +184,6 @@ public class EnemyController : MonoBehaviour, IEnemyController
             }
         }
     }
-
 
     private void OnDestroy()
     {

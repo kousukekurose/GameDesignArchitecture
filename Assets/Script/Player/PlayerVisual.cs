@@ -21,7 +21,8 @@ public class PlayerVisual : MonoBehaviour
     // 見えている（濃い）時間
     [SerializeField] private float _visibleDuration = 0.1f;
     // ダメージを受けた時の透明度（0.0〜1.0）   
-    [SerializeField] private float _flashAlpha = 0.3f;        
+    [SerializeField] private float _flashAlpha = 0.3f;   
+
     [Header("死亡アニメーション設定")]
     // 死亡時にキャラクターが傾く角度
     [SerializeField] private float _dieRotateAngle = 10f;

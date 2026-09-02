@@ -12,7 +12,6 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private GameObject _gameOverObject;
 
     private Button _titleButton;
-    private Button _exitButton;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -48,12 +47,9 @@ public class GameUIManager : MonoBehaviour
         {
             if (button.name == "TitleButton")
                 _titleButton = button;
-            else if (button.name == "ExitButton")
-                _exitButton = button;
         }
         
         _titleButton.interactable = true;
-        _exitButton.interactable = true;
 
         _titleButton.OnClickAsObservable()
         .ThrottleFirst(TimeSpan.FromSeconds(0.5f),UnityTimeProvider.Update)
@@ -61,14 +57,6 @@ public class GameUIManager : MonoBehaviour
         {
             PlayClickSE();
             await TitleButton(ct);
-        }).AddTo(this);
-
-        _exitButton.OnClickAsObservable()
-        .ThrottleFirst(TimeSpan.FromSeconds(0.5f),UnityTimeProvider.Update)
-        .SubscribeAwait(async (_,ct) =>
-        {
-            PlayClickSE();
-            await ExitButoon(ct);
         }).AddTo(this);
     }
 
@@ -87,17 +75,4 @@ public class GameUIManager : MonoBehaviour
         
         await SceneManager.LoadSceneAsync("Title").WithCancellation(ct);
     } 
-
-    private async UniTask ExitButoon(CancellationToken ct)
-    {
-        _exitButton.interactable = false;
-        await UniTask.Delay(500,cancellationToken : ct);
-        #if UNITY_EDITOR
-        // Unityエディタの「再生モード」を停止する
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        // 本番のゲーム（PC/スマホアプリ）を終了する
-        Application.Quit();
-#endif
-    }
 }

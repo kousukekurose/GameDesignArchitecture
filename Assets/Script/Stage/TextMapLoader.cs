@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine;
@@ -9,7 +8,6 @@ public class TextMapLoader : MonoBehaviour
     private static readonly Subject<Unit> _mapGenerate = new();
     public static Subject<Unit> MapGenerate => _mapGenerate;
 
-    // GameManagerがそのまま購読できるように static のまま維持
     private static readonly Subject<GameObject> _enemyObj = new Subject<GameObject>();
     public static Subject<GameObject> EnemyObj => _enemyObj;
 

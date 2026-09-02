@@ -3,7 +3,6 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using R3;
 
-// MonoBehaviorの継承は不要であれば外しても良いですが、元の形を維持
 public class GameManagerState : MonoBehaviour{}
 
 public class GameManagerStateInitialize : IGameManagerState
@@ -24,10 +23,6 @@ public class GameManagerStateInitialize : IGameManagerState
         
         _gameManager.PlayerGenerateNotification();
         await UniTask.WaitUntil(() => Player.Instance != null, cancellationToken: ct);
-        
-        // エネミーのイベント紐付け（GameManager側で適切に管理されている前提）
-        _gameManager.BindEnemySpawnEvents();
-        _gameManager.EnemyEvents();
 
         if(_gameManager._currentGameState == this)
         {

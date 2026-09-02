@@ -1,7 +1,6 @@
 using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
-using R3;
 
 //パトロール状態
 public class PatrolState : IEnemyState
