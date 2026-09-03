@@ -11,6 +11,9 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private GameObject _gameClearObject;
     [SerializeField] private GameObject _gameOverObject;
 
+    private static readonly Subject<Unit> _onSeActionSubject = new();
+    public static Observable<Unit> OnSEAction => _onSeActionSubject;
+
     private Button _titleButton;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -60,7 +63,11 @@ public class GameUIManager : MonoBehaviour
         }).AddTo(this);
     }
 
-    private void PlayClickSE() => Debug.Log("SE: カチッ！");
+    private void PlayClickSE()
+    {
+        Debug.Log("SE: カチッ！");
+        _onSeActionSubject.OnNext(Unit.Default);
+    }
 
     private async UniTask TitleButton(CancellationToken ct)
     {
