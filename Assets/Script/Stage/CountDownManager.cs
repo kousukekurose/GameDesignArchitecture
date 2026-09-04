@@ -8,6 +8,8 @@ public class CountDownManager : MonoBehaviour
 {
     private static readonly Subject<Unit> _countDown = new();
     public static readonly Subject<Unit> CountDown = _countDown;
+    private static readonly Subject<Unit> _stateSE = new();
+    public static readonly Subject<Unit> StateSE = _stateSE;
     private CancellationTokenSource _cts;
     [SerializeField] private TextMeshProUGUI _countDownText;
 
@@ -30,6 +32,7 @@ public class CountDownManager : MonoBehaviour
                 await UniTask.Delay(1000,cancellationToken:ct);
             }
             _countDownText.text = "Start";
+            _stateSE.OnNext(Unit.Default);
             await UniTask.Delay(1000,cancellationToken:ct);
             _countDown.OnNext(Unit.Default);
             Destroy(gameObject);

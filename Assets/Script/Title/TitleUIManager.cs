@@ -19,16 +19,10 @@ public class TitleUIManager : MonoBehaviour
     [SerializeField] private Button _audioButton;
     [SerializeField] private GameObject _controllersObj;
 
-    [SerializeField] private GameObject _audioObj;
-
     private int _audioLeyer;
 
     private void Awake()
     {
-        if(AudioManager.Instance == null && _audioObj != null)
-        {
-            GameObject _cloneAudioObj = Instantiate(_audioObj);
-        }
         
         _startButton.OnClickAsObservable()
         .ThrottleFirst(TimeSpan.FromSeconds(0.5f),UnityTimeProvider.Update)
@@ -69,17 +63,6 @@ public class TitleUIManager : MonoBehaviour
             PlayClickSE();
             await PlayAudioAsync(ct);
         }).AddTo(_disposables);
-
-        if(AudioManager.Instance != null)
-        {
-            AudioManager.Instance.OnAudioExit
-            .ThrottleFirst(TimeSpan.FromSeconds(0.5),UnityTimeProvider.Update)
-            .SubscribeAwait(async (_,ct) =>
-            {
-                PlayClickSE();
-                await ExitAudioAsync(ct);
-            }).AddTo(_disposables);
-        }
     }
 
 
@@ -87,6 +70,22 @@ public class TitleUIManager : MonoBehaviour
     {
         _controllersObj.SetActive(false);
         _audioLeyer = LayerMask.NameToLayer("Audio");
+        if(AudioManager.Instance != null)
+        {
+            AudioManager.Instance.OnAudioExit
+            .ThrottleFirst(TimeSpan.FromSeconds(0.5),UnityTimeProvider.Update)
+            .SubscribeAwait(async (_,ct) =>
+            {
+                Debug.Log("OnAudioExitイベントを受信しました");
+                PlayClickSE();
+                await ExitAudioAsync(ct);
+            }).AddTo(_disposables);
+            Debug.Log("OnAudioExit購読完了");
+        }
+        else
+        {
+            Debug.LogError("AudioManager.Instanceがnullです");
+        }
     }
 
     private void PlayClickSE()

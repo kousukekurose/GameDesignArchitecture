@@ -5,7 +5,17 @@ public class TitleManager : MonoBehaviour
 {
     private static readonly Subject<Unit> _onTitleStartSubject = new();
     public static Observable<Unit> OnTitleStart => _onTitleStartSubject;
-    
+
+    [SerializeField] private GameObject _audioObj;
+
+    private void Awake()
+    {
+        if(AudioManager.Instance == null && _audioObj != null)
+        {
+            Instantiate(_audioObj);
+        }
+    }
+
     private void Start()
     {
         _onTitleStartSubject.OnNext(Unit.Default);

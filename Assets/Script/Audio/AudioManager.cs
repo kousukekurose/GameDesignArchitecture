@@ -21,8 +21,18 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioSource _bgmSource; // BGM用のAudioSource
     [SerializeField] private AudioSource _seSource;  // 効果音用のAudioSource
 
+    [SerializeField] private AudioSource _playerSource;
+
     [SerializeField] private AudioClip _currentBGM; // 現在再生中のBGMを保持する変数
     [SerializeField] private AudioClip _currentSE;  // 現在再生中の効果音を保持する変数
+    [SerializeField] private AudioClip _gameclear;
+
+    [SerializeField] private AudioClip _gameOver;
+
+    [SerializeField] private AudioClip _startSE;
+
+    private Coroutine _duckingCoroutine;
+
     private void Awake()
     {
         if(Instance == null)
@@ -65,14 +75,59 @@ public class AudioManager : MonoBehaviour
         .AddTo(_disposables);
 
         // AudioExitボタンのクリックイベントを購読して通知を送る
-        _audioExit.OnClickAsObservable()
-        .Subscribe(_ => _onAudioExitSubject.OnNext(Unit.Default))
-        .AddTo(_disposables);
+        if(_audioExit != null)
+        {
+            _audioExit.OnClickAsObservable()
+            .Subscribe(_ => 
+            {
+                Debug.Log("AudioExitボタンがクリックされました");
+                _onAudioExitSubject.OnNext(Unit.Default);
+            })
+            .AddTo(_disposables);
+        }
+        else
+        {
+            Debug.LogError("AudioExitボタンが設定されていません");
+        }
+    }
+
+    private void Start()
+    {
+        CountDownManager.StateSE
+        .Subscribe(_ =>
+        {
+            PlaySE(_startSE);
+        }).AddTo(_disposables);
 
         GameUIManager.OnSEAction
         .Subscribe(_ =>
         {
             PlaySE(_currentSE);
+        }).AddTo(_disposables);
+
+        GoalController.GoalTrigger
+        .Subscribe(_ =>
+        {
+            FadeOutAndInBGM(0.15f, 0.2f, 1.5f);
+            PlaySE(_gameclear);
+        }).AddTo(_disposables);
+
+        if(PlayerVisual.Instance != null)
+        {
+            PlayerVisual.Instance.OnDeath
+            .Subscribe(_ =>
+            {
+                FadeOutAndInBGM(0.15f, 0.2f, 1.5f);
+                PlaySE(_gameOver);
+            }).AddTo(_disposables);
+        }
+
+        DeathController.DeathTrigger
+        .Subscribe(_ =>
+        {
+            FadeOutAndInBGM(0.15f, 0.2f, 1.5f);
+            Debug.Log("GemaOverSE");
+            PlaySE(_gameOver);
         }).AddTo(_disposables);
     }
 
@@ -108,5 +163,40 @@ public class AudioManager : MonoBehaviour
     public void OnSetSEVolume(float volume)
     {
         _seSource.volume = volume;
+    }
+
+    public void FadeOutAndInBGM(float lowVolume, float duration, float holdTime)
+    {
+        if (_bgmSource == null) return;
+        if (_duckingCoroutine != null) StopCoroutine(_duckingCoroutine);
+        _duckingCoroutine = StartCoroutine(DoDucking(lowVolume, duration, holdTime));
+    }
+
+    private IEnumerator DoDucking(float lowVolume, float duration, float holdTime)
+    {
+        float startVolume = _bgmSource.volume;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            _bgmSource.volume = Mathf.Lerp(startVolume, lowVolume, elapsedTime / duration);
+            yield return null;
+        }
+        _bgmSource.volume = lowVolume;
+
+        yield return new WaitForSeconds(holdTime);
+
+        elapsedTime = 0f;
+        float targetVolume = _bgmSlider != null ? _bgmSlider.value : startVolume;
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            _bgmSource.volume = Mathf.Lerp(lowVolume, targetVolume, elapsedTime / duration);
+            yield return null;
+        }
+        _bgmSource.volume = targetVolume;
+
+        _duckingCoroutine = null;
     }
 }
