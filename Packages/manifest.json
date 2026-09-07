@@ -1,7 +1,10 @@
 {
   "dependencies": {
-    "com.cysharp.r3": "1.3.1",
-    "com.cysharp.unitask": "2.5.11",
+    "com.cysharp.messagepipe": "https://github.com/Cysharp/MessagePipe.git?path=src/MessagePipe.Unity/Assets/Plugins/MessagePipe",
+    "com.cysharp.messagepipe.vcontainer": "https://github.com/Cysharp/MessagePipe.git?path=src/MessagePipe.Unity/Assets/Plugins/MessagePipe.VContainer",
+    "com.cysharp.r3": "https://github.com/Cysharp/R3.git?path=src/R3.Unity/Assets/R3.Unity",
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+    "com.github-glitchenzo.nugetforunity": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
     "com.unity.2d.animation": "15.1.0",
     "com.unity.2d.aseprite": "5.0.3",
     "com.unity.2d.psdimporter": "14.0.3",
@@ -20,8 +23,7 @@
     "com.unity.timeline": "1.8.12",
     "com.unity.ugui": "2.5.0",
     "com.unity.visualscripting": "1.9.12",
-    "org.nuget.observablecollections.r3": "3.3.4",
-    "org.nuget.r3": "1.3.1",
+    "jp.hadashikick.vcontainer": "https://github.com/hadashiA/VContainer.git?path=VContainer/Assets/VContainer#1.19.0",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.adaptiveperformance": "1.0.0",
     "com.unity.modules.ai": "1.0.0",
@@ -63,8 +65,7 @@
       "url": "https://package.openupm.com",
       "scopes": [
         "org.nuget",
-        "com.cysharp",
-        "jp.hadashikick.vcontainer"
+        "com.cysharp"
       ]
     }
   ]
